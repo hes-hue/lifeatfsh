@@ -5,3 +5,4 @@ admin-src/dist/
 .env.*
 .DS_Store
 .gemini/
+.vercel

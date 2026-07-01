@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tabItems = document.querySelectorAll(".nav-tab-item");
   const mainSearch = document.getElementById("main-search");
   const loader = document.getElementById("page-loader");
+  const searchToggle = document.getElementById("btn-search-toggle");
+  const searchContainer = document.querySelector(".search-container");
 
   function escapeHtml(str) {
     if (!str) return "";
@@ -257,6 +259,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     mainSearch.value = "";
+    if (searchContainer) {
+      searchContainer.classList.remove("show");
+    }
 
     if (tabName === "home") {
       renderHomeHub();
@@ -284,6 +289,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderDirectory(query);
     }
   });
+
+  // Toggle search bar visibility
+  if (searchToggle && searchContainer && mainSearch) {
+    searchToggle.addEventListener("click", () => {
+      searchContainer.classList.toggle("show");
+      if (searchContainer.classList.contains("show")) {
+        mainSearch.focus();
+      } else {
+        mainSearch.value = "";
+        mainSearch.dispatchEvent(new Event("input"));
+      }
+    });
+  }
 
   // ==========================================
   // VIEW RENDERERS
