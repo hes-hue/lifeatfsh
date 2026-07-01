@@ -1,0 +1,7 @@
+node_modules/
+admin-src/node_modules/
+admin-src/dist/
+.env
+.env.*
+.DS_Store
+.gemini/

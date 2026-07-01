@@ -1,0 +1,16 @@
+{
+  "name": "lifeatfsh.uinsgd.ac.id",
+  "version": "1.0.0",
+  "description": "Layanan Linktree & Direktori Fakultas Syariah dan Hukum UIN SGD Bandung",
+  "main": "build.js",
+  "scripts": {
+    "build": "npm run build --prefix admin-src && node build.js",
+    "dev": "npx http-server -p 8080"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
