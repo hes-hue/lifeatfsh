@@ -191,6 +191,7 @@ p, .profile-bio, .link-row-desc, .prodi-desc, .directory-meta, .ticker-text, .em
   background: linear-gradient(135deg, var(--halodoc-red) 0%, var(--halodoc-red-hover) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  cursor: pointer;
 }
 
 .header-actions-row {
@@ -566,6 +567,16 @@ p, .profile-bio, .link-row-desc, .prodi-desc, .directory-meta, .ticker-text, .em
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-dark);
+}
+
+.directory-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border-light);
+  background-color: var(--bg-slate);
+  flex-shrink: 0;
 }
 
 .directory-meta {

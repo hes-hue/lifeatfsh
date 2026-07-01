@@ -295,20 +295,104 @@ const DATA = {
   directory: {
     fakultas: [
       {
-        name: "Media Center - Fakultas Syariah dan Hukum",
-        whatsapp: "+628953000900",
-        whatsapp_label: "Bu Dea",
-        instagram: "https://www.instagram.com/fsh.uinsgd/",
-        web: "https://fsh.uinsgd.ac.id/",
-        group_wa: "https://chat.whatsapp.com/HKgxNsVgwxm59SqOGaTKK3?mode=gi_t"
-      },
-      {
         name: "Tata Usaha Fakultas Syariah dan Hukum",
+        description: "Pelayanan administrasi akademik, kemahasiswaan, kepegawaian, dan keuangan tingkat Fakultas.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/fsh-front-1.jpg",
         whatsapp: "+628953000900",
         whatsapp_label: "Bu Dea",
         instagram: "https://www.instagram.com/lifeatfsh",
         web: "https://tufsh.uinsgd.ac.id/",
         group_wa: ""
+      },
+      {
+        name: "Zakat, Infaq, Shodaqah dan Beasiswa Alumni (ZISWA)",
+        description: "Menghimpun, mengelola, dan mendistribusikan dana zakat, infaq, shodaqah dari alumni dan donatur untuk program beasiswa dan pemberdayaan mahasiswa.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/ZISWA.webp",
+        whatsapp: "",
+        whatsapp_label: "",
+        instagram: "",
+        web: "https://forms.gle/MGEGuBjgXW3ftjNT6",
+        group_wa: ""
+      },
+      {
+        name: "Pembinaan dan Promosi Mahasiswa Unggul (P2MU)",
+        description: "Membina dan mempromosikan mahasiswa berprestasi melalui program pelatihan, kompetisi, dan sertifikasi untuk mencetak lulusan kompetitif.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/P2MU-foto1.webp",
+        whatsapp: "",
+        whatsapp_label: "",
+        instagram: "",
+        web: "https://fsh.uinsgd.ac.id/",
+        group_wa: ""
+      },
+      {
+        name: "Pusat Pengembangan Kinerja, Informasi, Dokumentasi (PPKID)",
+        description: "Mengoptimalkan kinerja civitas akademika melalui pelatihan, pengelolaan sistem informasi, dan dokumentasi kegiatan akademik terintegrasi.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/PPKID.webp",
+        whatsapp: "",
+        whatsapp_label: "",
+        instagram: "",
+        web: "https://fsh.uinsgd.ac.id/",
+        group_wa: ""
+      },
+      {
+        name: "Lembaga Bantuan dan Konsultasi Hukum (LBKH)",
+        description: "Memberikan layanan bantuan hukum, konsultasi, dan pendampingan perkara bagi masyarakat. Berkomitmen mewujudkan akses keadilan dengan pendekatan syariah.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/LBKH.webp",
+        whatsapp: "",
+        whatsapp_label: "",
+        instagram: "",
+        web: "https://fsh.uinsgd.ac.id/",
+        group_wa: ""
+      },
+      {
+        name: "Lembaga Jaringan Dokumentasi dan Informasi Hukum (JDIH)",
+        description: "Mengelola dan mendesiminasikan produk hukum untuk mendukung transparansi dan akses informasi publik.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/JDIH.webp",
+        whatsapp: "",
+        whatsapp_label: "",
+        instagram: "",
+        web: "https://fsh.uinsgd.ac.id/",
+        group_wa: ""
+      },
+      {
+        name: "Pusat Kajian Syariah, Hukum HAM dan Kemasyarakatan",
+        description: "Pusat penelitian yang mengembangkan studi syariah, hukum, dan HAM melalui riset, publikasi, serta advokasi kebijakan berbasis nilai keislaman.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/fsh-front-1.jpg",
+        whatsapp: "",
+        whatsapp_label: "",
+        instagram: "",
+        web: "https://fsh.uinsgd.ac.id/",
+        group_wa: ""
+      },
+      {
+        name: "Lembaga Jurnal Fakultas Syariah dan Hukum",
+        description: "Pusat pengelolaan dan penerbitan jurnal ilmiah di lingkungan fakultas. Menghadirkan publikasi berkala hasil riset untuk pengembangan keilmuan berdampak.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/snapedit_1771140609951-1.png",
+        whatsapp: "",
+        whatsapp_label: "",
+        instagram: "",
+        web: "https://fsh.uinsgd.ac.id/",
+        group_wa: ""
+      },
+      {
+        name: "Pusat Literasi & Perpustakaan Fakultas Syariah dan Hukum",
+        description: "Pusat pengembangan literasi dan layanan perpustakaan fakultas. Menyediakan koleksi pustaka, ruang baca, serta program-program literasi penunjang tridharma.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/fsh-front-1.jpg",
+        whatsapp: "",
+        whatsapp_label: "",
+        instagram: "",
+        web: "https://fsh.uinsgd.ac.id/",
+        group_wa: ""
+      },
+      {
+        name: "Media Center Fakultas Syariah dan Hukum",
+        description: "Pusat pengelolaan informasi dan komunikasi fakultas. Mengelola media sosial, kanal YouTube, Podcast, website, serta pengembangan sistem informasi.",
+        photo: "https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/fsh-front-1.jpg",
+        whatsapp: "+628953000900",
+        whatsapp_label: "Bu Dea",
+        instagram: "https://www.instagram.com/fsh.uinsgd/",
+        web: "https://fsh.uinsgd.ac.id/",
+        group_wa: "https://chat.whatsapp.com/HKgxNsVgwxm59SqOGaTKK3?mode=gi_t"
       }
     ],
     prodi: [

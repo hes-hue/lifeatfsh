@@ -246,6 +246,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  // Brand Logo Text Click Trigger
+  const brandText = document.querySelector(".brand-text");
+  if (brandText) {
+    brandText.addEventListener("click", () => {
+      activeProfile = null;
+      switchTab("home");
+    });
+  }
+
   // Switch Active Tab
   function switchTab(tabName) {
     currentTab = tabName;
@@ -551,22 +560,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     let matchesCount = 0;
     const query = searchQuery.toLowerCase();
 
-    // 1. Render Fakultas
+    // 1. Render Fakultas (Lembaga)
     if (activeDirCat === "semua" || activeDirCat === "fakultas") {
       DATA.directory.fakultas.forEach(f => {
-        if (query === "" || f.name.toLowerCase().includes(query) || (f.whatsapp_label && f.whatsapp_label.toLowerCase().includes(query))) {
+        const isMatch = query === "" || 
+                        f.name.toLowerCase().includes(query) || 
+                        (f.description && f.description.toLowerCase().includes(query)) ||
+                        (f.whatsapp_label && f.whatsapp_label.toLowerCase().includes(query));
+        if (isMatch) {
           matchesCount++;
           html += `
             <div class="directory-card">
               <div class="directory-header">
-                <div>
-                  <div class="directory-title">${f.name}</div>
-                  <div class="directory-meta">Fakultas / Layanan Utama</div>
+                <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+                  ${f.photo ? `<img src="${f.photo}" class="directory-thumb" alt="${f.name}">` : ''}
+                  <div style="flex: 1;">
+                    <div class="directory-title">${f.name}</div>
+                    <div class="directory-meta">Lembaga / Unit Fakultas</div>
+                  </div>
                 </div>
               </div>
+              ${f.description ? `<div class="directory-desc" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; margin-top: 4px;">${escapeHtml(f.description)}</div>` : ''}
               <div class="directory-actions">
-                ${f.whatsapp ? `<a href="https://wa.me/${f.whatsapp.replace('+', '')}" target="_blank" class="action-btn wa">${ICONS.whatsapp} WA (${f.whatsapp_label || 'Helpdesk'})</a>` : ''}
-                ${f.web ? `<a href="${f.web}" target="_blank" class="action-btn web">${ICONS.globe} Website</a>` : ''}
+                ${f.whatsapp ? `<a href="https://wa.me/${f.whatsapp.replace('+', '')}" target="_blank" class="action-btn wa">${ICONS.whatsapp} WA (${escapeHtml(f.whatsapp_label || 'Helpdesk')})</a>` : ''}
+                ${f.instagram ? `<a href="${f.instagram}" target="_blank" class="action-btn ig">${ICONS.instagram} Instagram</a>` : ''}
+                ${f.web ? `<a href="${f.web}" target="_blank" class="action-btn web">${ICONS.globe} Detail Lembaga</a>` : ''}
                 ${f.group_wa ? `<a href="${f.group_wa}" target="_blank" class="action-btn group">${ICONS.users} Grup WA</a>` : ''}
               </div>
             </div>

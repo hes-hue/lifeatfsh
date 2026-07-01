@@ -63,6 +63,8 @@ export default function App() {
   const [fakInstagram, setFakInstagram] = useState('');
   const [fakWeb, setFakWeb] = useState('');
   const [fakGroupWa, setFakGroupWa] = useState('');
+  const [fakDescription, setFakDescription] = useState('');
+  const [fakPhoto, setFakPhoto] = useState('');
 
   // 3. Prodi Directory Form
   const [proName, setProName] = useState('');
@@ -249,6 +251,8 @@ export default function App() {
     setLinkDescription('');
 
     setFakName('');
+    setFakDescription('');
+    setFakPhoto('');
     setFakWhatsapp('');
     setFakWhatsappLabel('');
     setFakInstagram('');
@@ -281,6 +285,8 @@ export default function App() {
       setLinkDescription(item.description || '');
     } else if (activeTab === 'fakultas') {
       setFakName(item.name);
+      setFakDescription(item.description || '');
+      setFakPhoto(item.photo || '');
       setFakWhatsapp(item.whatsapp || '');
       setFakWhatsappLabel(item.whatsapp_label || '');
       setFakInstagram(item.instagram || '');
@@ -350,6 +356,8 @@ export default function App() {
       } else if (activeTab === 'fakultas') {
         const payload = {
           name: fakName,
+          description: fakDescription,
+          photo: fakPhoto,
           whatsapp: fakWhatsapp,
           whatsapp_label: fakWhatsappLabel,
           instagram: fakInstagram,
@@ -764,7 +772,19 @@ export default function App() {
                   {/* Fakultas rows */}
                   {activeTab === 'fakultas' && filteredItems.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-all">
-                      <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
+                      <td className="px-6 py-4 font-semibold text-slate-900">
+                        <div className="flex items-center gap-3">
+                          {item.photo && (
+                            <img src={item.photo} alt={item.name} className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <div className="truncate font-semibold text-slate-900">{item.name}</div>
+                            {item.description && (
+                              <div className="text-[10px] text-slate-400 font-normal max-w-xs truncate">{item.description}</div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-6 py-4">
                         {item.whatsapp ? (
                           <div>
@@ -959,6 +979,27 @@ export default function App() {
                       onChange={(e) => setFakName(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white text-xs"
                     />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">URL Foto/Logo</label>
+                    <input
+                      type="text"
+                      placeholder="https://fsh.uinsgd.ac.id/wp-content/...webp"
+                      value={fakPhoto}
+                      onChange={(e) => setFakPhoto(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Deskripsi Lembaga</label>
+                    <textarea
+                      placeholder="Penjelasan singkat tugas atau peran lembaga..."
+                      value={fakDescription}
+                      onChange={(e) => setFakDescription(e.target.value)}
+                      maxLength={200}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white text-xs min-h-[60px]"
+                    />
+                    <div className="text-[8px] text-slate-400 text-right">{fakDescription.length}/200 karakter</div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
