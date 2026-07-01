@@ -1185,11 +1185,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           </button>
         </div>
 
-        <div style="font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-top: 10px; line-height: 1.4;">
-          <strong>Demo Info:</strong><br>
-          • Operator Prodi/TU: <code>admin.tufsh</code> / <code>admin123</code><br>
-          • HMJ Hukum Keluarga: <code>hmj.hk</code> / <code>hmj123</code>
-        </div>
+
       </div>
     `;
 
