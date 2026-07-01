@@ -35,16 +35,16 @@
 }
 
 html, body {
-  background-color: #1A1A1A;
+  background-color: #121212;
   color: var(--text-dark);
   font-family: var(--font-primary);
   font-size: 15px;
   line-height: 1.5;
   height: 100%;
+  width: 100%;
   overflow: hidden;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 /* Base style for scrollbar */
@@ -73,19 +73,15 @@ html, body {
   flex-direction: column;
 }
 
-/* Desktop Viewport Mock Frame */
+/* Responsive Central Layout for Larger Screens */
 @media (min-width: 500px) {
   body {
     background: radial-gradient(circle at 10% 20%, rgba(224, 0, 77, 0.05) 0%, rgba(0, 0, 0, 0) 90%), #121212;
   }
   .app-container {
-    width: 420px;
-    height: 880px;
-    max-height: 92vh;
-    border: 12px solid #222222;
-    border-radius: 44px;
-    box-shadow: var(--shadow-lg), 0 0 0 2px rgba(255,255,255,0.05);
-    margin: auto;
+    max-width: 460px;
+    height: 100%;
+    box-shadow: 0 0 40px rgba(0,0,0,0.3);
   }
 }
 
