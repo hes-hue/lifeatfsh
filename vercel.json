@@ -1,5 +1,6 @@
 {
   "cleanUrls": true,
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/twibbon", "destination": "/index.html" },
     { "source": "/twibbon/:slug", "destination": "/index.html" },
