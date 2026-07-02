@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
-  base: './',
+  base: '/admin/',
   build: {
     outDir: '../admin',
     emptyOutDir: true
