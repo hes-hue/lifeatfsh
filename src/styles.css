@@ -127,14 +127,26 @@ p, .profile-bio, .link-row-desc, .prodi-desc, .directory-meta, .ticker-text, .em
   color: var(--text-muted);
   text-decoration: none;
   cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 500;
   transition: var(--transition-fast);
   border: none;
   background: transparent;
   outline: none;
   user-select: none;
   gap: 4px;
+  width: 100%;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.nav-tab-item span {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
 }
 
 .nav-tab-item svg {
