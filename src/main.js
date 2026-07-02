@@ -202,66 +202,75 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }, remainingLoaderTime);
 
-  // Check bootstrap configurations for subdirectory cleaning
-  const pathParts = window.location.pathname.split("/").filter(Boolean);
-
-  if (pathParts.length === 2) {
-    const profileKey = pathParts[0];
-    const pageSlug = pathParts[1];
-
-    // Hide standard tab bar since we are in direct standalone page mode
+  // URL Routing Engine for client-side navigation (PopState support)
+  function handleUrlRouting() {
+    const pathParts = window.location.pathname.split("/").filter(Boolean);
     const navBar = document.querySelector(".nav-tab-bar");
-    if (navBar) navBar.style.display = "none";
     const viewport = document.getElementById("app-viewport");
-    if (viewport) viewport.style.paddingBottom = "20px";
 
-    if (profileKey === "twibbon") {
-      activeProfile = null;
-      fetchAndRenderTwibbonEditor(pageSlug);
-    } else {
-      activeProfile = profileKey;
-      fetchAndRenderStaticPage(pageSlug);
-    }
-  } else if (pathParts.length === 1 && pathParts[0] === "twibbon") {
-    switchTab("twibbon");
-  } else if (window.CURRENT_PROFILE && DATA.profiles[window.CURRENT_PROFILE]) {
-    activeProfile = window.CURRENT_PROFILE;
-    
-    // Hide standard tab bar since we are in direct standalone page mode
-    const navBar = document.querySelector(".nav-tab-bar");
-    if (navBar) navBar.style.display = "none";
-    const viewport = document.getElementById("app-viewport");
-    if (viewport) viewport.style.paddingBottom = "20px";
+    // Default: ensure navBar is visible and padding is restored
+    if (navBar) navBar.style.display = "flex";
+    if (viewport) viewport.style.paddingBottom = "70px";
 
-    if (activeProfile === "informasi") {
-      renderInformasiPage();
-    } else if (activeProfile === "wag-prodi") {
-      renderWagProdiPage();
-    } else {
-      renderProfileView(activeProfile);
-    }
-  } else {
-    // Check search URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const pParam = urlParams.get("p") || urlParams.get("page");
-    if (pParam) {
-      if (DATA.profiles[pParam]) {
-        activeProfile = pParam;
-        if (activeProfile === "informasi") {
-          renderInformasiPage();
-        } else if (activeProfile === "wag-prodi") {
-          renderWagProdiPage();
-        } else {
-          renderProfileView(activeProfile);
-        }
+    if (pathParts.length === 2) {
+      const profileKey = pathParts[0];
+      const pageSlug = pathParts[1];
+
+      // Hide standard tab bar since we are in direct standalone page mode
+      if (navBar) navBar.style.display = "none";
+      if (viewport) viewport.style.paddingBottom = "20px";
+
+      if (profileKey === "twibbon") {
+        activeProfile = null;
+        fetchAndRenderTwibbonEditor(pageSlug);
       } else {
-        // Try fetching as static page
-        fetchAndRenderStaticPage(pParam);
+        activeProfile = profileKey;
+        fetchAndRenderStaticPage(pageSlug);
+      }
+    } else if (pathParts.length === 1 && pathParts[0] === "twibbon") {
+      switchTab("twibbon", true);
+    } else if (window.CURRENT_PROFILE && DATA.profiles[window.CURRENT_PROFILE]) {
+      activeProfile = window.CURRENT_PROFILE;
+      
+      // Hide standard tab bar since we are in direct standalone page mode
+      if (navBar) navBar.style.display = "none";
+      if (viewport) viewport.style.paddingBottom = "20px";
+
+      if (activeProfile === "informasi") {
+        renderInformasiPage();
+      } else if (activeProfile === "wag-prodi") {
+        renderWagProdiPage();
+      } else {
+        renderProfileView(activeProfile);
       }
     } else {
-      switchTab("home");
+      // Check search URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const pParam = urlParams.get("p") || urlParams.get("page");
+      if (pParam) {
+        if (DATA.profiles[pParam]) {
+          activeProfile = pParam;
+          if (activeProfile === "informasi") {
+            renderInformasiPage();
+          } else if (activeProfile === "wag-prodi") {
+            renderWagProdiPage();
+          } else {
+            renderProfileView(activeProfile);
+          }
+        } else {
+          fetchAndRenderStaticPage(pParam);
+        }
+      } else {
+        switchTab("home", true);
+      }
     }
   }
+
+  // Initial routing execution
+  handleUrlRouting();
+
+  // Register popstate listener for back/forward navigation and programmatical route changes
+  window.addEventListener("popstate", handleUrlRouting);
 
   // Bottom Nav items click trigger
   tabItems.forEach(item => {
@@ -365,7 +374,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Switch Active Tab
-  function switchTab(tabName) {
+  function switchTab(tabName, preventPushState = false) {
     currentTab = tabName;
     
     // Restore navigation bar visibility and body padding in case returning from full-page editor
@@ -385,6 +394,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     mainSearch.value = "";
     if (searchContainer) {
       searchContainer.classList.remove("show");
+    }
+
+    // Update URL if we are at root level and pushState is permitted
+    if (!preventPushState && !window.CURRENT_PROFILE) {
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      // Only modify state if we are not deep-linked into a static page subfolder
+      if (pathParts.length <= 1) {
+        if (tabName === "twibbon") {
+          window.history.pushState({}, "", "/twibbon");
+        } else {
+          window.history.pushState({}, "", "/");
+        }
+      }
     }
 
     if (tabName === "home") {

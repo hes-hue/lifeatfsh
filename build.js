@@ -10,17 +10,17 @@ function generateSubpageHtml(key, profile) {
   let subpage = templateHtml;
 
   // 1. Adjust asset paths to absolute root paths for multi-level routing support
-  subpage = subpage.replace('href="src/styles.css?v=1.0.6"', 'href="/src/styles.css?v=1.0.6"');
-  subpage = subpage.replace('src="src/data.js?v=1.0.6"', 'src="/src/data.js?v=1.0.6"');
-  subpage = subpage.replace('src="src/main.js?v=1.0.6"', 'src="/src/main.js?v=1.0.6"');
+  subpage = subpage.replace('href="src/styles.css?v=1.0.7"', 'href="/src/styles.css?v=1.0.7"');
+  subpage = subpage.replace('src="src/data.js?v=1.0.7"', 'src="/src/data.js?v=1.0.7"');
+  subpage = subpage.replace('src="src/main.js?v=1.0.7"', 'src="/src/main.js?v=1.0.7"');
 
   // 2. Insert the current profile bootstrap flag before main.js
   const scriptInsertion = `
   <script>
     window.CURRENT_PROFILE = "${key}";
   </script>
-  <script src="/src/main.js?v=1.0.6"></script>`;
-  subpage = subpage.replace('<script src="/src/main.js?v=1.0.6"></script>', scriptInsertion);
+  <script src="/src/main.js?v=1.0.7"></script>`;
+  subpage = subpage.replace('<script src="/src/main.js?v=1.0.7"></script>', scriptInsertion);
 
   // 3. Customize SEO Title & Meta tags
   const defaultTitle = 'Life at FSH - Fakultas Syariah & Hukum UIN SGD';
