@@ -19,7 +19,8 @@ import {
   GraduationCap,
   Users,
   Layout,
-  FileText
+  FileText,
+  Image
 } from 'lucide-react';
 
 export default function App() {
@@ -35,12 +36,20 @@ export default function App() {
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(''); // Current profile key being managed
   const [staticPages, setStaticPages] = useState([]);
+  const [twibbonCampaigns, setTwibbonCampaigns] = useState([]);
 
   // Static Pages Form
   const [pageSlug, setPageSlug] = useState('');
   const [pageTitle, setPageTitle] = useState('');
   const [pageContent, setPageContent] = useState('');
   const [pageProfileKey, setPageProfileKey] = useState('');
+
+  // Twibbon Campaign Form
+  const [campaignSlug, setCampaignSlug] = useState('');
+  const [campaignTitle, setCampaignTitle] = useState('');
+  const [campaignDescription, setCampaignDescription] = useState('');
+  const [campaignFrameUrl, setCampaignFrameUrl] = useState('');
+  const [campaignProfileKey, setCampaignProfileKey] = useState('');
 
   // Profiles Form
   const [profileKey, setProfileKey] = useState('');
@@ -186,6 +195,14 @@ export default function App() {
         const { data, error } = await query.order('created_at', { ascending: false });
         if (error) throw error;
         setStaticPages(data || []);
+      } else if (activeTab === 'twibbon') {
+        let query = supabase.from('twibbon_campaigns').select('*');
+        if (operator.role === 'prodi') {
+          query = query.eq('profile_key', operator.profile_key);
+        }
+        const { data, error } = await query.order('created_at', { ascending: false });
+        if (error) throw error;
+        setTwibbonCampaigns(data || []);
       } else if (activeTab === 'fakultas') {
         const { data, error } = await supabase
           .from('directory_fakultas')
@@ -318,6 +335,12 @@ export default function App() {
     setPageContent('');
     setPageProfileKey(operator?.role === 'prodi' ? operator?.profile_key : (selectedProfile || 'fsh'));
 
+    setCampaignSlug('');
+    setCampaignTitle('');
+    setCampaignDescription('');
+    setCampaignFrameUrl('');
+    setCampaignProfileKey(operator?.role === 'prodi' ? operator?.profile_key : (selectedProfile || 'fsh'));
+
     setIsDialogOpen(true);
   };
 
@@ -367,6 +390,12 @@ export default function App() {
       setPageTitle(item.title);
       setPageContent(item.content);
       setPageProfileKey(item.profile_key);
+    } else if (activeTab === 'twibbon') {
+      setCampaignSlug(item.slug);
+      setCampaignTitle(item.title);
+      setCampaignDescription(item.description || '');
+      setCampaignFrameUrl(item.frame_url);
+      setCampaignProfileKey(item.profile_key);
     }
 
     setIsDialogOpen(true);
@@ -507,6 +536,22 @@ export default function App() {
           await executeSecureWrite('static_pages', 'update', payload, currentEditItem.id);
           showToast('success', 'Halaman Statis berhasil diperbarui!');
         }
+      } else if (activeTab === 'twibbon') {
+        const payload = {
+          slug: campaignSlug,
+          title: campaignTitle,
+          description: campaignDescription,
+          frame_url: campaignFrameUrl,
+          profile_key: campaignProfileKey
+        };
+
+        if (dialogMode === 'add') {
+          await executeSecureWrite('twibbon_campaigns', 'insert', payload);
+          showToast('success', 'Kampanye Twibbon berhasil ditambahkan!');
+        } else {
+          await executeSecureWrite('twibbon_campaigns', 'update', payload, currentEditItem.id);
+          showToast('success', 'Kampanye Twibbon berhasil diperbarui!');
+        }
       }
 
       setIsDialogOpen(false);
@@ -535,6 +580,8 @@ export default function App() {
         fetchProfiles();
       } else if (activeTab === 'static_pages') {
         await executeSecureWrite('static_pages', 'delete', {}, id);
+      } else if (activeTab === 'twibbon') {
+        await executeSecureWrite('twibbon_campaigns', 'delete', {}, id);
       }
 
       showToast('success', 'Data berhasil dihapus.');
@@ -561,6 +608,8 @@ export default function App() {
       return profiles.filter(p => p.title.toLowerCase().includes(q) || p.key.toLowerCase().includes(q));
     } else if (activeTab === 'static_pages') {
       return staticPages.filter(item => item.title.toLowerCase().includes(q) || item.slug.toLowerCase().includes(q));
+    } else if (activeTab === 'twibbon') {
+      return twibbonCampaigns.filter(item => item.title.toLowerCase().includes(q) || item.slug.toLowerCase().includes(q));
     }
     return [];
   };
@@ -715,6 +764,18 @@ export default function App() {
             Halaman Statis Custom
           </button>
 
+          <button
+            onClick={() => setActiveTab('twibbon')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              activeTab === 'twibbon'
+                ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
+                : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+            }`}
+          >
+            <Image className="h-4 w-4" />
+            Twibbon Kampanye
+          </button>
+
           {/* Directory management tabs only available for admin */}
           {operator.role === 'admin' && (
             <>
@@ -801,6 +862,7 @@ export default function App() {
               {activeTab === 'links' && 'Manajemen Linktree'}
               {activeTab === 'profiles' && 'Manajemen Halaman Linktree'}
               {activeTab === 'static_pages' && 'Manajemen Halaman Statis'}
+              {activeTab === 'twibbon' && 'Manajemen Kampanye Twibbon'}
               {activeTab === 'fakultas' && 'Direktori Lembaga & TU'}
               {activeTab === 'prodi' && 'Direktori Program Studi S1'}
               {activeTab === 'hmj' && 'Direktori Himpunan Mahasiswa'}
@@ -809,6 +871,7 @@ export default function App() {
               {activeTab === 'links' && 'Kelola daftar tautan eksternal dan beasiswa pada masing-masing profile prodi.'}
               {activeTab === 'profiles' && 'Buat, edit, dan hapus profil/halaman Linktree prodi/lembaga.'}
               {activeTab === 'static_pages' && 'Buat dan kelola halaman informasi statis dengan styling teks.'}
+              {activeTab === 'twibbon' && 'Buat dan kelola bingkai foto kampanye twibbon tanpa penyimpanan server (Zero-Storage).'}
               {activeTab === 'fakultas' && 'Kelola daftar lembaga, nomor helpdesk, dan link grup angkatan maba fakultas.'}
               {activeTab === 'prodi' && 'Kelola info website prodi dan akreditasi prodi.'}
               {activeTab === 'hmj' && 'Kelola kontak ketua himpunan dan formulir grup Whatsapp maba.'}
@@ -903,6 +966,15 @@ export default function App() {
                         <th className="px-6 py-3.5">Judul Halaman</th>
                         <th className="px-6 py-3.5">URL Slug</th>
                         <th className="px-6 py-3.5">Lingkup Profil</th>
+                        <th className="px-6 py-3.5">Tampilan Live</th>
+                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                      </>
+                    )}
+                    {activeTab === 'twibbon' && (
+                      <>
+                        <th className="px-6 py-3.5">Judul Kampanye</th>
+                        <th className="px-6 py-3.5">URL Slug</th>
+                        <th className="px-6 py-3.5">Frame URL</th>
                         <th className="px-6 py-3.5">Tampilan Live</th>
                         <th className="px-6 py-3.5 text-right">Aksi</th>
                       </>
@@ -1110,6 +1182,28 @@ export default function App() {
                       <td className="px-6 py-4 font-mono font-bold text-slate-700">{item.profile_key}</td>
                       <td className="px-6 py-4">
                         <a href={item.profile_key === 'fsh' ? `/${item.slug}` : `/${item.profile_key}/${item.slug}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
+                          Buka Halaman <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {/* Twibbon campaigns rows */}
+                  {activeTab === 'twibbon' && filteredItems.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-all">
+                      <td className="px-6 py-4 font-semibold text-slate-900">{item.title}</td>
+                      <td className="px-6 py-4 font-mono text-slate-500">{item.slug}</td>
+                      <td className="px-6 py-4 font-mono text-slate-400 max-w-xs truncate">{item.frame_url}</td>
+                      <td className="px-6 py-4">
+                        <a href={`/twibbon/${item.slug}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
                           Buka Halaman <ExternalLink className="h-2.5 w-2.5" />
                         </a>
                       </td>
@@ -1687,6 +1781,77 @@ export default function App() {
                       />
                     </div>
                     <p className="text-[10px] text-slate-400 mt-1">Gunakan tombol-tombol di toolbar atas untuk menebalkan teks, membuat daftar, atau menambahkan link.</p>
+                  </div>
+                </>
+              )}
+
+              {/* Form 7: Twibbon campaigns inputs */}
+              {activeTab === 'twibbon' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Judul Kampanye</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Contoh: Twibbon Maba FSH 2026"
+                        value={campaignTitle}
+                        onChange={(e) => setCampaignTitle(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Slug URL (ID Unik)</label>
+                      <input
+                        type="text"
+                        required
+                        disabled={dialogMode === 'edit'}
+                        placeholder="Contoh: maba-fsh-2026"
+                        value={campaignSlug}
+                        onChange={(e) => setCampaignSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      />
+                      <p className="text-[9px] text-slate-400 mt-0.5">Alamat: <code>/twibbon/{campaignSlug || 'slug'}</code></p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Frame PNG URL (Harus Transparan)</label>
+                    <input
+                      type="url"
+                      required
+                      placeholder="Contoh: https://imgbb.com/frame.png"
+                      value={campaignFrameUrl}
+                      onChange={(e) => setCampaignFrameUrl(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-0.5">Upload bingkai PNG transparan Anda ke layanan hosting gambar gratis (seperti ImgBB/ImageKit) lalu tempel link langsungnya di sini.</p>
+                  </div>
+
+                  {operator.role === 'admin' && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Lingkup Kampanye (Profil/Prodi)</label>
+                      <select
+                        value={campaignProfileKey}
+                        onChange={(e) => setCampaignProfileKey(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white text-xs"
+                      >
+                        {profiles.map(p => (
+                          <option key={p.key} value={p.key}>{p.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Deskripsi / Petunjuk Kampanye</label>
+                    <textarea
+                      placeholder="Contoh: Ayo ramaikan dengan memakai bingkai foto resmi dan posting di medsos..."
+                      value={campaignDescription}
+                      onChange={(e) => setCampaignDescription(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs h-20 outline-none resize-none"
+                    />
                   </div>
                 </>
               )}

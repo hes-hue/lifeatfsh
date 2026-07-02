@@ -208,7 +208,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (pathParts.length === 2) {
     const profileKey = pathParts[0];
     const pageSlug = pathParts[1];
-    activeProfile = profileKey;
 
     // Hide standard tab bar since we are in direct standalone page mode
     const navBar = document.querySelector(".nav-tab-bar");
@@ -216,7 +215,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const viewport = document.getElementById("app-viewport");
     if (viewport) viewport.style.paddingBottom = "20px";
 
-    fetchAndRenderStaticPage(pageSlug);
+    if (profileKey === "twibbon") {
+      activeProfile = null;
+      fetchAndRenderTwibbonEditor(pageSlug);
+    } else {
+      activeProfile = profileKey;
+      fetchAndRenderStaticPage(pageSlug);
+    }
+  } else if (pathParts.length === 1 && pathParts[0] === "twibbon") {
+    switchTab("twibbon");
   } else if (window.CURRENT_PROFILE && DATA.profiles[window.CURRENT_PROFILE]) {
     activeProfile = window.CURRENT_PROFILE;
     
@@ -361,6 +368,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   function switchTab(tabName) {
     currentTab = tabName;
     
+    // Restore navigation bar visibility and body padding in case returning from full-page editor
+    const navBar = document.querySelector(".nav-tab-bar");
+    if (navBar) navBar.style.display = "flex";
+    const viewport = document.getElementById("app-viewport");
+    if (viewport) viewport.style.paddingBottom = "70px";
+
     tabItems.forEach(item => {
       if (item.getAttribute("data-tab") === tabName) {
         item.classList.add("active");
@@ -378,6 +391,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderHomeHub();
     } else if (tabName === "prodi") {
       renderProdiList();
+    } else if (tabName === "twibbon") {
+      renderTwibbonGallery();
     } else if (tabName === "directory") {
       renderDirectory("");
     } else if (tabName === "info") {
@@ -1562,6 +1577,379 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       });
     });
+  }
+
+  async function renderTwibbonGallery() {
+    if (loader) {
+      loader.style.opacity = "1";
+      loader.style.display = "flex";
+    }
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/twibbon_campaigns?select=*&order=created_at.desc`, {
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+      if (!response.ok) throw new Error("Gagal mengambil data kampanye.");
+      const campaigns = await response.json();
+
+      if (campaigns.length === 0) {
+        appViewport.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 0.85rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; margin: 0 auto 16px; color: var(--border-light);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <p>Belum ada kampanye Twibbon aktif saat ini.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let cardsHtml = campaigns.map(c => `
+        <div class="card-item hover-scale" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; min-height: 140px; cursor: pointer;" onclick="window.history.pushState({}, '', '/twibbon/${c.slug}'); window.dispatchEvent(new PopStateEvent('popstate'));">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span class="badge" style="background-color: var(--soft-rose); color: var(--halodoc-red); border: none; font-size: 0.65rem; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; font-weight: bold;">
+                ${escapeHtml(c.profile_key)}
+              </span>
+            </div>
+            <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; line-height: 1.3;">
+              ${escapeHtml(c.title)}
+            </h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px;">
+              ${escapeHtml(c.description || "Kampanye bingkai foto resmi FSH.")}
+            </p>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-light); padding-top: 8px; margin-top: auto;">
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Mulai Mengedit</span>
+            <span style="color: var(--halodoc-red); font-weight: bold; font-size: 0.95rem;">→</span>
+          </div>
+        </div>
+      `).join("");
+
+      appViewport.innerHTML = `
+        <div style="padding: 20px; animation: var(--fade-in);">
+          <div style="margin-bottom: 20px;">
+            <h1 style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);">Kampanye Twibbon Resmi</h1>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Pilih bingkai resmi di bawah ini untuk memasang foto profil Anda.</p>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+            ${cardsHtml}
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      console.error(e);
+      appViewport.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: var(--halodoc-red); font-size: 0.8rem;">
+          Gagal memuat kampanye Twibbon: ${e.message}
+        </div>
+      `;
+    } finally {
+      if (loader) {
+        setTimeout(() => loader.style.display = "none", 400);
+      }
+    }
+  }
+
+  async function fetchAndRenderTwibbonEditor(slug) {
+    if (loader) {
+      loader.style.opacity = "1";
+      loader.style.display = "flex";
+    }
+
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/twibbon_campaigns?slug=eq.${slug}&select=*`, {
+        headers: {
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+      if (!response.ok) throw new Error("Gagal mengambil data kampanye.");
+      const campaigns = await response.json();
+
+      if (campaigns.length === 0) {
+        appViewport.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 0.85rem;">
+            Kampanye tidak ditemukan.
+          </div>
+        `;
+        return;
+      }
+
+      const campaign = campaigns[0];
+      
+      appViewport.innerHTML = `
+        <div style="padding: 20px; animation: var(--fade-in); max-width: 480px; margin: 0 auto;">
+          <!-- Header -->
+          <div style="margin-bottom: 20px; text-align: center;">
+            <h1 style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);">${escapeHtml(campaign.title)}</h1>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+              ${escapeHtml(campaign.description || "Unggah foto Anda di bawah, atur posisinya, lalu unduh hasilnya secara gratis.")}
+            </p>
+          </div>
+
+          <!-- Canvas Preview Area -->
+          <div style="position: relative; width: 100%; max-width: 360px; margin: 0 auto 20px; aspect-ratio: 1; border: 1px solid var(--border-light); border-radius: 16px; overflow: hidden; background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center;">
+            <canvas id="twibbon-canvas" width="1080" height="1080" style="width: 100%; height: 100%; display: block; object-fit: contain; cursor: grab;"></canvas>
+            <div id="canvas-placeholder" style="position: absolute; text-align: center; pointer-events: none; color: var(--text-muted); font-size: 0.75rem; padding: 20px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 40px; height: 40px; margin: 0 auto 10px; color: var(--text-muted); opacity: 0.5;"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+              Klik tombol di bawah untuk memasukkan foto
+            </div>
+          </div>
+
+          <!-- Controls Section -->
+          <div id="twibbon-controls" style="display: none; flex-direction: column; gap: 16px; margin-bottom: 24px; background: white; padding: 16px; border: 1px solid var(--border-light); border-radius: 16px;">
+            <!-- Zoom Slider -->
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-dark);">UKURAN FOTO (ZOOM)</label>
+                <span id="zoom-value" style="font-size: 0.7rem; font-weight: 600; color: var(--halodoc-red);">100%</span>
+              </div>
+              <input type="range" id="zoom-slider" min="10" max="300" value="100" style="width: 100%; accent-color: var(--halodoc-red); height: 6px; border-radius: 3px; cursor: pointer;" />
+            </div>
+
+            <!-- Rotation & Operations -->
+            <div style="display: flex; justify-content: space-between; gap: 12px;">
+              <button id="btn-rotate-left" style="flex: 1; padding: 8px; font-size: 0.75rem; font-weight: 600; background: var(--bg-slate); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                ↺ Putar Kiri
+              </button>
+              <button id="btn-rotate-right" style="flex: 1; padding: 8px; font-size: 0.75rem; font-weight: 600; background: var(--bg-slate); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                Putar Kanan ↻
+              </button>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- File Input (Styled Button) -->
+            <label style="width: 100%; padding: 12px; background-color: var(--halodoc-red); color: white; border-radius: 12px; font-weight: 700; font-size: 0.85rem; text-align: center; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(224, 0, 77, 0.15); transition: var(--transition-fast);">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Pilih Fotomu</span>
+              <input type="file" id="photo-input" accept="image/*" style="display: none;" />
+            </label>
+
+            <!-- Download Button -->
+            <button id="btn-download" style="display: none; width: 100%; padding: 12px; background-color: #0c9e64; color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(12, 158, 100, 0.15);">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Unduh Twibbon
+            </button>
+
+            <!-- Back Button -->
+            <button id="btn-back-gallery" style="width: 100%; padding: 10px; background-color: transparent; border: 1px solid var(--border-light); color: var(--text-dark); border-radius: 12px; font-weight: 600; font-size: 0.8rem; cursor: pointer;">
+              Kembali ke Galeri Twibbon
+            </button>
+          </div>
+
+          <!-- Privacy Shield Notice -->
+          <div style="margin-top: 24px; text-align: center; font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background-color: var(--bg-slate); border-radius: 10px; border: 1px dashed var(--border-light);">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; color: #0c9e64; shrink-0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span><strong>Zero-Storage:</strong> Foto Anda tidak dikirim ke server. Proses editing dilakukan 100% lokal di browser Anda.</span>
+          </div>
+        </div>
+      `;
+
+      // Canvas variables & Setup
+      const canvas = document.getElementById("twibbon-canvas");
+      const ctx = canvas.getContext("2d");
+      const placeholder = document.getElementById("canvas-placeholder");
+      const controls = document.getElementById("twibbon-controls");
+      const photoInput = document.getElementById("photo-input");
+      const downloadBtn = document.getElementById("btn-download");
+      const zoomSlider = document.getElementById("zoom-slider");
+      const zoomValue = document.getElementById("zoom-value");
+      const rotateLeft = document.getElementById("btn-rotate-left");
+      const rotateRight = document.getElementById("btn-rotate-right");
+
+      let userImg = null;
+      let frameImg = new Image();
+      frameImg.crossOrigin = "anonymous";
+      frameImg.src = campaign.frame_url;
+
+      // Frame loaded listener
+      frameImg.onload = () => {
+        drawCanvas();
+      };
+
+      // State variables for position/scale/rotation
+      let scale = 1.0;
+      let rotation = 0; // degrees (0, 90, 180, 270)
+      let offsetX = 0;
+      let offsetY = 0;
+
+      // Drag states
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+
+      function drawCanvas() {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw user image if available
+        if (userImg) {
+          ctx.save();
+          // Translate to center of canvas
+          ctx.translate(canvas.width / 2 + offsetX, canvas.height / 2 + offsetY);
+          // Rotate
+          ctx.rotate((rotation * Math.PI) / 180);
+          // Scale and draw
+          const w = userImg.width * scale;
+          const h = userImg.height * scale;
+          ctx.drawImage(userImg, -w / 2, -h / 2, w, h);
+          ctx.restore();
+        } else {
+          // Fill background color for placeholder visualization
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw transparent PNG frame on top
+        if (frameImg.complete) {
+          ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      // Handle Image Selection
+      photoInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          userImg = new Image();
+          userImg.onload = () => {
+            // Compute default scale to cover the canvas (1080x1080)
+            const scaleX = canvas.width / userImg.width;
+            const scaleY = canvas.height / userImg.height;
+            scale = Math.max(scaleX, scaleY);
+            zoomSlider.value = Math.round(scale * 100);
+            zoomValue.innerText = `${zoomSlider.value}%`;
+            
+            offsetX = 0;
+            offsetY = 0;
+            rotation = 0;
+
+            placeholder.style.display = "none";
+            controls.style.display = "flex";
+            downloadBtn.style.display = "inline-flex";
+            drawCanvas();
+          };
+          userImg.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Zoom listener
+      zoomSlider.addEventListener("input", (e) => {
+        scale = e.target.value / 100;
+        zoomValue.innerText = `${e.target.value}%`;
+        drawCanvas();
+      });
+
+      // Rotate listener
+      rotateLeft.addEventListener("click", () => {
+        rotation = (rotation - 90) % 360;
+        drawCanvas();
+      });
+      rotateRight.addEventListener("click", () => {
+        rotation = (rotation + 90) % 360;
+        drawCanvas();
+      });
+
+      // Mouse drag handlers
+      canvas.addEventListener("mousedown", (e) => {
+        if (!userImg) return;
+        isDragging = true;
+        canvas.style.cursor = "grabbing";
+        const rect = canvas.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Multiply displacement by scale factor ratio of canvas logical to physical dimension
+        const factor = canvas.width / rect.width;
+        offsetX += (mouseX - startX) * factor;
+        offsetY += (mouseY - startY) * factor;
+
+        startX = mouseX;
+        startY = mouseY;
+        drawCanvas();
+      });
+
+      window.addEventListener("mouseup", () => {
+        isDragging = false;
+        canvas.style.cursor = "grab";
+      });
+
+      // Touch drag handlers (for mobile)
+      canvas.addEventListener("touchstart", (e) => {
+        if (!userImg || e.touches.length !== 1) return;
+        isDragging = true;
+        const rect = canvas.getBoundingClientRect();
+        startX = e.touches[0].clientX - rect.left;
+        startY = e.touches[0].clientY - rect.top;
+      });
+
+      canvas.addEventListener("touchmove", (e) => {
+        if (!isDragging || e.touches.length !== 1) return;
+        e.preventDefault(); // Stop mobile scroll pull-to-refresh
+        const rect = canvas.getBoundingClientRect();
+        const touchX = e.touches[0].clientX - rect.left;
+        const touchY = e.touches[0].clientY - rect.top;
+
+        const factor = canvas.width / rect.width;
+        offsetX += (touchX - startX) * factor;
+        offsetY += (touchY - startY) * factor;
+
+        startX = touchX;
+        startY = touchY;
+        drawCanvas();
+      });
+
+      canvas.addEventListener("touchend", () => {
+        isDragging = false;
+      });
+
+      // Download trigger
+      downloadBtn.addEventListener("click", () => {
+        if (!userImg) return;
+        
+        try {
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+          const link = document.createElement("a");
+          link.download = `twibbon-${slug}.jpg`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          alert("Twibbon berhasil diunduh! Foto Anda telah dihapus secara otomatis dari memori browser.");
+        } catch (err) {
+          console.error(err);
+          alert("Gagal mengunduh gambar. Jika Anda mengunduh dari browser bawaan medsos (seperti IG/FB/LINE), silakan buka link ini melalui browser utama (Chrome/Safari).");
+        }
+      });
+
+      // Back Button
+      document.getElementById("btn-back-gallery").addEventListener("click", () => {
+        window.history.pushState({}, "", "/twibbon");
+        switchTab("twibbon");
+      });
+
+    } catch (e) {
+      console.error(e);
+      appViewport.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--halodoc-red); font-size: 0.8rem;">Gagal memuat halaman twibbon: ${e.message}</div>`;
+    } finally {
+      if (loader) {
+        setTimeout(() => loader.style.display = "none", 400);
+      }
+    }
   }
   } catch (err) {
     console.error("Critical Startup Error:", err);
