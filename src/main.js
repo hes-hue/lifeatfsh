@@ -203,7 +203,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, remainingLoaderTime);
 
   // Check bootstrap configurations for subdirectory cleaning
-  if (window.CURRENT_PROFILE && DATA.profiles[window.CURRENT_PROFILE]) {
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+
+  if (pathParts.length === 2) {
+    const profileKey = pathParts[0];
+    const pageSlug = pathParts[1];
+    activeProfile = profileKey;
+
+    // Hide standard tab bar since we are in direct standalone page mode
+    const navBar = document.querySelector(".nav-tab-bar");
+    if (navBar) navBar.style.display = "none";
+    const viewport = document.getElementById("app-viewport");
+    if (viewport) viewport.style.paddingBottom = "20px";
+
+    fetchAndRenderStaticPage(pageSlug);
+  } else if (window.CURRENT_PROFILE && DATA.profiles[window.CURRENT_PROFILE]) {
     activeProfile = window.CURRENT_PROFILE;
     
     // Hide standard tab bar since we are in direct standalone page mode
@@ -223,14 +237,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Check search URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const pParam = urlParams.get("p") || urlParams.get("page");
-    if (pParam && DATA.profiles[pParam]) {
-      activeProfile = pParam;
-      if (activeProfile === "informasi") {
-        renderInformasiPage();
-      } else if (activeProfile === "wag-prodi") {
-        renderWagProdiPage();
+    if (pParam) {
+      if (DATA.profiles[pParam]) {
+        activeProfile = pParam;
+        if (activeProfile === "informasi") {
+          renderInformasiPage();
+        } else if (activeProfile === "wag-prodi") {
+          renderWagProdiPage();
+        } else {
+          renderProfileView(activeProfile);
+        }
       } else {
-        renderProfileView(activeProfile);
+        // Try fetching as static page
+        fetchAndRenderStaticPage(pParam);
       }
     } else {
       switchTab("home");
@@ -253,6 +272,89 @@ document.addEventListener("DOMContentLoaded", async () => {
       activeProfile = null;
       switchTab("home");
     });
+  }
+
+  async function fetchAndRenderStaticPage(slug) {
+    if (loader) {
+      loader.style.opacity = "1";
+      loader.style.display = "flex";
+    }
+    
+    try {
+      const headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      };
+      
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/static_pages?slug=eq.${slug}&select=*`, { headers });
+      if (!response.ok) throw new Error("Gagal mengambil data halaman");
+      
+      const pages = await response.json();
+      if (!pages || pages.length === 0) {
+        appViewport.innerHTML = `
+          <div style="background-color: var(--bg-white); border-radius: 20px; border: 1px solid var(--border-light); padding: 40px 24px; text-align: center; box-shadow: var(--shadow-sm); margin-bottom: 80px;">
+            <div class="info-row-icon" style="margin: 0 auto 20px; width: 64px; height: 64px; border-radius: 50%;">
+              ${ICONS.info}
+            </div>
+            <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">Halaman Tidak Ditemukan</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 24px;">Maaf, halaman yang Anda cari tidak tersedia atau telah dihapus.</p>
+            <button id="btn-back-home" style="width: auto; padding: 10px 24px; margin: 0 auto; display: inline-flex; align-items: center; justify-content: center; background-color: var(--halodoc-red); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: var(--transition-fast);">
+              Kembali ke Beranda
+            </button>
+          </div>
+        `;
+        document.getElementById("btn-back-home").addEventListener("click", () => {
+          window.history.pushState({}, "", window.location.pathname);
+          switchTab("home");
+        });
+        return;
+      }
+      
+      const page = pages[0];
+      
+      appViewport.innerHTML = `
+        <div class="static-page-card">
+          <!-- Header -->
+          <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 16px;">
+            <h1 class="static-page-title">${escapeHtml(page.title)}</h1>
+            <div style="font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 8px;">
+              <span>Lingkup: <strong style="text-transform: uppercase;">${escapeHtml(page.profile_key)}</strong></span>
+              <span>•</span>
+              <span>Dibuat: ${new Date(page.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            </div>
+          </div>
+          
+          <!-- Content Body -->
+          <div class="static-page-content">
+            ${page.content}
+          </div>
+          
+          <!-- Back button -->
+          <div style="margin-top: 32px; border-top: 1px solid var(--border-light); padding-top: 20px; display: flex; justify-content: center;">
+            <button id="btn-back-home" style="width: auto; padding: 10px 24px; display: inline-flex; align-items: center; justify-content: center; background-color: var(--bg-slate); color: var(--text-dark); border: 1px solid var(--border-light); border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: var(--transition-fast);">
+              Kembali ke Menu Utama
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById("btn-back-home").addEventListener("click", () => {
+        if (page.profile_key && page.profile_key !== "fsh") {
+          window.location.href = `/${page.profile_key}/`;
+        } else {
+          window.location.href = "/";
+        }
+      });
+      
+    } catch (e) {
+      console.error(e);
+      appViewport.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: var(--halodoc-red); font-size: 0.8rem;">Terjadi kesalahan saat memuat halaman: ${e.message}</div>`;
+    } finally {
+      if (loader) {
+        loader.style.opacity = "0";
+        setTimeout(() => loader.style.display = "none", 400);
+      }
+    }
   }
 
   // Switch Active Tab

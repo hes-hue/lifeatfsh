@@ -1,4 +1,6 @@
 {
-  "buildCommand": "exit 0",
-  "outputDirectory": "."
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/:profile(hk|hes|pm|hpi|htn|ih|laboratorium|akademik|informasi|wag-prodi)/:slug", "destination": "/:profile/index.html" }
+  ]
 }

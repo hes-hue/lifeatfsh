@@ -18,7 +18,8 @@ import {
   Building,
   GraduationCap,
   Users,
-  Layout
+  Layout,
+  FileText
 } from 'lucide-react';
 
 export default function App() {
@@ -30,9 +31,16 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
 
   // App states
-  const [activeTab, setActiveTab] = useState('links'); // 'links', 'profiles', 'fakultas', 'prodi', 'hmj'
+  const [activeTab, setActiveTab] = useState('links'); // 'links', 'profiles', 'static_pages', 'fakultas', 'prodi', 'hmj'
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(''); // Current profile key being managed
+  const [staticPages, setStaticPages] = useState([]);
+
+  // Static Pages Form
+  const [pageSlug, setPageSlug] = useState('');
+  const [pageTitle, setPageTitle] = useState('');
+  const [pageContent, setPageContent] = useState('');
+  const [pageProfileKey, setPageProfileKey] = useState('');
 
   // Profiles Form
   const [profileKey, setProfileKey] = useState('');
@@ -170,6 +178,14 @@ export default function App() {
         setLinks(data || []);
       } else if (activeTab === 'profiles') {
         await fetchProfiles();
+      } else if (activeTab === 'static_pages') {
+        let query = supabase.from('static_pages').select('*');
+        if (operator.role === 'prodi') {
+          query = query.eq('profile_key', operator.profile_key);
+        }
+        const { data, error } = await query.order('created_at', { ascending: false });
+        if (error) throw error;
+        setStaticPages(data || []);
       } else if (activeTab === 'fakultas') {
         const { data, error } = await supabase
           .from('directory_fakultas')
@@ -297,6 +313,11 @@ export default function App() {
     setProfileSocialWeb('');
     setProfileSocialEmail('');
 
+    setPageSlug('');
+    setPageTitle('');
+    setPageContent('');
+    setPageProfileKey(operator?.role === 'prodi' ? operator?.profile_key : (selectedProfile || 'fsh'));
+
     setIsDialogOpen(true);
   };
 
@@ -341,6 +362,11 @@ export default function App() {
       setProfileSocialInstagram(item.social_instagram || '');
       setProfileSocialWeb(item.social_web || '');
       setProfileSocialEmail(item.social_email || '');
+    } else if (activeTab === 'static_pages') {
+      setPageSlug(item.slug);
+      setPageTitle(item.title);
+      setPageContent(item.content);
+      setPageProfileKey(item.profile_key);
     }
 
     setIsDialogOpen(true);
@@ -466,6 +492,21 @@ export default function App() {
           showToast('success', 'Halaman Linktree berhasil diperbarui!');
         }
         fetchProfiles();
+      } else if (activeTab === 'static_pages') {
+        const payload = {
+          slug: pageSlug,
+          title: pageTitle,
+          content: pageContent,
+          profile_key: pageProfileKey
+        };
+
+        if (dialogMode === 'add') {
+          await executeSecureWrite('static_pages', 'insert', payload);
+          showToast('success', 'Halaman Statis berhasil ditambahkan!');
+        } else {
+          await executeSecureWrite('static_pages', 'update', payload, currentEditItem.id);
+          showToast('success', 'Halaman Statis berhasil diperbarui!');
+        }
       }
 
       setIsDialogOpen(false);
@@ -492,6 +533,8 @@ export default function App() {
       } else if (activeTab === 'profiles') {
         await executeSecureWrite('profiles', 'delete', {}, id);
         fetchProfiles();
+      } else if (activeTab === 'static_pages') {
+        await executeSecureWrite('static_pages', 'delete', {}, id);
       }
 
       showToast('success', 'Data berhasil dihapus.');
@@ -516,6 +559,8 @@ export default function App() {
       return dirHmj.filter(item => item.name.toLowerCase().includes(q) || (item.contact_person && item.contact_person.toLowerCase().includes(q)));
     } else if (activeTab === 'profiles') {
       return profiles.filter(p => p.title.toLowerCase().includes(q) || p.key.toLowerCase().includes(q));
+    } else if (activeTab === 'static_pages') {
+      return staticPages.filter(item => item.title.toLowerCase().includes(q) || item.slug.toLowerCase().includes(q));
     }
     return [];
   };
@@ -575,6 +620,45 @@ export default function App() {
               )}
             </button>
           </form>
+
+          {/* Menu Tentang / Panduan Penggunaan */}
+          <div className="mt-8 pt-6 border-t border-slate-100">
+            <details className="group cursor-pointer">
+              <summary className="list-none flex items-center justify-between text-xs font-semibold text-slate-500 hover:text-slate-800 transition-all select-none">
+                <span className="flex items-center gap-1.5">
+                  <Info className="h-3.5 w-3.5" />
+                  Tentang & Panduan Penggunaan Aplikasi
+                </span>
+                <span className="transition-transform group-open:rotate-180 text-[10px]">▼</span>
+              </summary>
+              <div className="mt-3 space-y-3 text-xs text-slate-600 leading-relaxed max-h-[220px] overflow-y-auto pr-1">
+                <p className="font-semibold text-slate-800">Life at FSH CMS adalah panel pengelolaan satu pintu untuk memperbarui data pada portal linktree utama.</p>
+                
+                <div className="space-y-1.5">
+                  <div className="font-semibold text-slate-800">📍 Cara Menambah Link Baru:</div>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>Pilih menu <strong>Links Jurusan / Fakultas</strong> di sidebar.</li>
+                    <li>Pilih prodi Anda (jika admin) dan klik <strong>Tambah Data</strong>.</li>
+                    <li>Masukkan judul link, alamat URL lengkap (misal: <code>https://...</code>), dan kategori link (misal: Beasiswa/Layanan).</li>
+                  </ol>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="font-semibold text-slate-800">📄 Cara Membuat Halaman Baru (Statis):</div>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>Pilih menu <strong>Halaman Statis Custom</strong> dan klik <strong>Tambah Data</strong>.</li>
+                    <li>Tulis Judul Halaman dan ketik <strong>Slug URL</strong> (contoh: <code>alur-sidang</code>). Halaman Anda akan otomatis ber-alamat di <code>domain/[jurusan]/alur-sidang</code>.</li>
+                    <li>Tulis konten panduan Anda di kotak teks. Blok teks dan gunakan toolbar atas untuk menebalkan (B), memiringkan (I), membuat bullet list, subjudul (H), atau memasang link.</li>
+                    <li>Klik <strong>Simpan</strong> untuk mempublikasikan halaman secara langsung.</li>
+                  </ol>
+                </div>
+
+                <div className="text-[10px] text-slate-400 border-t border-slate-100 pt-2 text-center">
+                  © 2026 Fakultas Syariah dan Hukum UIN SGD Bandung. All rights reserved.
+                </div>
+              </div>
+            </details>
+          </div>
         </div>
 
         {/* Global Toast Notification */}
@@ -617,6 +701,18 @@ export default function App() {
           >
             <FolderOpen className="h-4 w-4" />
             Links Jurusan / Fakultas
+          </button>
+
+          <button
+            onClick={() => setActiveTab('static_pages')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              activeTab === 'static_pages'
+                ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
+                : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            Halaman Statis Custom
           </button>
 
           {/* Directory management tabs only available for admin */}
@@ -704,6 +800,7 @@ export default function App() {
             <h2 className="text-lg font-bold text-slate-900">
               {activeTab === 'links' && 'Manajemen Linktree'}
               {activeTab === 'profiles' && 'Manajemen Halaman Linktree'}
+              {activeTab === 'static_pages' && 'Manajemen Halaman Statis'}
               {activeTab === 'fakultas' && 'Direktori Lembaga & TU'}
               {activeTab === 'prodi' && 'Direktori Program Studi S1'}
               {activeTab === 'hmj' && 'Direktori Himpunan Mahasiswa'}
@@ -711,6 +808,7 @@ export default function App() {
             <p className="text-slate-500 text-xs mt-1">
               {activeTab === 'links' && 'Kelola daftar tautan eksternal dan beasiswa pada masing-masing profile prodi.'}
               {activeTab === 'profiles' && 'Buat, edit, dan hapus profil/halaman Linktree prodi/lembaga.'}
+              {activeTab === 'static_pages' && 'Buat dan kelola halaman informasi statis dengan styling teks.'}
               {activeTab === 'fakultas' && 'Kelola daftar lembaga, nomor helpdesk, dan link grup angkatan maba fakultas.'}
               {activeTab === 'prodi' && 'Kelola info website prodi dan akreditasi prodi.'}
               {activeTab === 'hmj' && 'Kelola kontak ketua himpunan dan formulir grup Whatsapp maba.'}
@@ -796,6 +894,15 @@ export default function App() {
                         <th className="px-6 py-3.5">ID Halaman (Key)</th>
                         <th className="px-6 py-3.5">Nama Halaman</th>
                         <th className="px-6 py-3.5">Bio</th>
+                        <th className="px-6 py-3.5">Tampilan Live</th>
+                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                      </>
+                    )}
+                    {activeTab === 'static_pages' && (
+                      <>
+                        <th className="px-6 py-3.5">Judul Halaman</th>
+                        <th className="px-6 py-3.5">URL Slug</th>
+                        <th className="px-6 py-3.5">Lingkup Profil</th>
                         <th className="px-6 py-3.5">Tampilan Live</th>
                         <th className="px-6 py-3.5 text-right">Aksi</th>
                       </>
@@ -962,6 +1069,7 @@ export default function App() {
                         <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
+                      </td>
                     </tr>
                   ))}
 
@@ -988,6 +1096,28 @@ export default function App() {
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
                         <button onClick={() => handleDelete(item.key)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {/* Static Pages rows */}
+                  {activeTab === 'static_pages' && filteredItems.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-all">
+                      <td className="px-6 py-4 font-semibold text-slate-900">{item.title}</td>
+                      <td className="px-6 py-4 font-mono text-slate-500">{item.slug}</td>
+                      <td className="px-6 py-4 font-mono font-bold text-slate-700">{item.profile_key}</td>
+                      <td className="px-6 py-4">
+                        <a href={item.profile_key === 'fsh' ? `/${item.slug}` : `/${item.profile_key}/${item.slug}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
+                          Buka Halaman <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -1413,6 +1543,150 @@ export default function App() {
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
                       />
                     </div>
+                  </div>
+                </>
+              )}
+
+              {/* Form 6: Static Pages inputs */}
+              {activeTab === 'static_pages' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Judul Halaman</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Contoh: Panduan Mengisi KRS"
+                        value={pageTitle}
+                        onChange={(e) => setPageTitle(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Slug URL (ID Unik)</label>
+                      <input
+                        type="text"
+                        required
+                        disabled={dialogMode === 'edit'}
+                        placeholder="Contoh: panduan-krs"
+                        value={pageSlug}
+                        onChange={(e) => setPageSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      />
+                      <p className="text-[9px] text-slate-400 mt-0.5">Alamat: <code>/?page={pageSlug || 'slug'}</code></p>
+                    </div>
+                  </div>
+
+                  {operator.role === 'admin' && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Lingkup Halaman (Profil/Prodi)</label>
+                      <select
+                        value={pageProfileKey}
+                        onChange={(e) => setPageProfileKey(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white text-xs"
+                      >
+                        {profiles.map(p => (
+                          <option key={p.key} value={p.key}>{p.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Konten Halaman (Styling Teks)</label>
+                    <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50 focus-within:bg-white focus-within:border-rose-500 transition-all">
+                      {/* Editor Toolbar */}
+                      <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-100/80 border-b border-slate-200/80">
+                        <button
+                          type="button"
+                          onClick={() => document.execCommand('bold', false)}
+                          className="px-2 py-1 text-xs font-bold rounded hover:bg-slate-200 text-slate-700 cursor-pointer active:scale-95 transition-all"
+                          title="Tebal (Bold)"
+                        >
+                          B
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => document.execCommand('italic', false)}
+                          className="px-2 py-1 text-xs italic rounded hover:bg-slate-200 text-slate-700 cursor-pointer active:scale-95 transition-all"
+                          title="Miring (Italic)"
+                        >
+                          I
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => document.execCommand('underline', false)}
+                          className="px-2 py-1 text-xs underline rounded hover:bg-slate-200 text-slate-700 cursor-pointer active:scale-95 transition-all"
+                          title="Garis Bawah (Underline)"
+                        >
+                          U
+                        </button>
+                        <div className="h-4 w-[1px] bg-slate-300 mx-1"></div>
+                        <button
+                          type="button"
+                          onClick={() => document.execCommand('insertUnorderedList', false)}
+                          className="px-2 py-1 text-xs rounded hover:bg-slate-200 text-slate-700 cursor-pointer active:scale-95 transition-all"
+                          title="Daftar Bullet"
+                        >
+                          • List
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => document.execCommand('insertOrderedList', false)}
+                          className="px-2 py-1 text-xs rounded hover:bg-slate-200 text-slate-700 cursor-pointer active:scale-95 transition-all"
+                          title="Daftar Nomor"
+                        >
+                          1. List
+                        </button>
+                        <div className="h-4 w-[1px] bg-slate-300 mx-1"></div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const size = prompt('Masukkan ukuran heading (1 untuk Judul Besar, 2 untuk Subjudul, 3 untuk Biasa):', '2');
+                            if (size) document.execCommand('formatBlock', false, `<h${size}>`);
+                          }}
+                          className="px-2 py-1 text-xs font-semibold rounded hover:bg-slate-200 text-slate-700 cursor-pointer active:scale-95 transition-all"
+                          title="Judul / Heading"
+                        >
+                          H
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const url = prompt('Masukkan URL Link:');
+                            if (url) document.execCommand('createLink', false, url);
+                          }}
+                          className="px-2 py-1 text-xs text-rose-600 font-semibold rounded hover:bg-slate-200 cursor-pointer active:scale-95 transition-all"
+                          title="Sematkan Link"
+                        >
+                          Link
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => document.execCommand('removeFormat', false)}
+                          className="px-2 py-1 text-xs text-slate-400 rounded hover:bg-slate-200 cursor-pointer active:scale-95 transition-all"
+                          title="Hapus Format"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                      
+                      {/* Editor Textarea (contentEditable) */}
+                      <div
+                        contentEditable
+                        suppressContentEditableWarning
+                        onInput={(e) => setPageContent(e.currentTarget.innerHTML)}
+                        ref={(el) => {
+                          if (el && el.innerHTML !== pageContent) {
+                            el.innerHTML = pageContent;
+                          }
+                        }}
+                        className="w-full p-4 text-xs min-h-[220px] max-h-[400px] overflow-y-auto outline-none prose prose-slate max-w-none text-slate-900 bg-white"
+                        placeholder="Ketik konten halaman di sini, gunakan toolbar di atas untuk styling..."
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">Gunakan tombol-tombol di toolbar atas untuk menebalkan teks, membuat daftar, atau menambahkan link.</p>
                   </div>
                 </>
               )}

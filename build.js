@@ -9,18 +9,18 @@ const templateHtml = fs.readFileSync(rootHtmlPath, 'utf8');
 function generateSubpageHtml(key, profile) {
   let subpage = templateHtml;
 
-  // 1. Adjust relative asset paths for subdirectories
-  subpage = subpage.replace('href="src/styles.css?v=1.0.4"', 'href="../src/styles.css?v=1.0.4"');
-  subpage = subpage.replace('src="src/data.js?v=1.0.4"', 'src="../src/data.js?v=1.0.4"');
-  subpage = subpage.replace('src="src/main.js?v=1.0.4"', 'src="../src/main.js?v=1.0.4"');
+  // 1. Adjust asset paths to absolute root paths for multi-level routing support
+  subpage = subpage.replace('href="src/styles.css?v=1.0.4"', 'href="/src/styles.css?v=1.0.4"');
+  subpage = subpage.replace('src="src/data.js?v=1.0.4"', 'src="/src/data.js?v=1.0.4"');
+  subpage = subpage.replace('src="src/main.js?v=1.0.4"', 'src="/src/main.js?v=1.0.4"');
 
   // 2. Insert the current profile bootstrap flag before main.js
   const scriptInsertion = `
   <script>
     window.CURRENT_PROFILE = "${key}";
   </script>
-  <script src="../src/main.js?v=1.0.4"></script>`;
-  subpage = subpage.replace('<script src="../src/main.js?v=1.0.4"></script>', scriptInsertion);
+  <script src="/src/main.js?v=1.0.4"></script>`;
+  subpage = subpage.replace('<script src="/src/main.js?v=1.0.4"></script>', scriptInsertion);
 
   // 3. Customize SEO Title & Meta tags
   const defaultTitle = 'Life at FSH - Fakultas Syariah & Hukum UIN SGD';
