@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   Building,
   GraduationCap,
-  Users
+  Users,
+  Layout
 } from 'lucide-react';
 
 export default function App() {
@@ -29,9 +30,21 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
 
   // App states
-  const [activeTab, setActiveTab] = useState('links'); // 'links', 'fakultas', 'prodi', 'hmj'
+  const [activeTab, setActiveTab] = useState('links'); // 'links', 'profiles', 'fakultas', 'prodi', 'hmj'
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(''); // Current profile key being managed
+
+  // Profiles Form
+  const [profileKey, setProfileKey] = useState('');
+  const [profileTitle, setProfileTitle] = useState('');
+  const [profileBio, setProfileBio] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState('');
+  const [profileBgColor, setProfileBgColor] = useState('#F5F5F5');
+  const [profileUrlBanner, setProfileUrlBanner] = useState('');
+  const [profileSocialFacebook, setProfileSocialFacebook] = useState('');
+  const [profileSocialInstagram, setProfileSocialInstagram] = useState('');
+  const [profileSocialWeb, setProfileSocialWeb] = useState('');
+  const [profileSocialEmail, setProfileSocialEmail] = useState('');
   
   // Data lists
   const [links, setLinks] = useState([]);
@@ -135,7 +148,7 @@ export default function App() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('key, title')
+        .select('*')
         .order('key', { ascending: true });
       if (error) throw error;
       setProfiles(data || []);
@@ -155,6 +168,8 @@ export default function App() {
           .order('sort_order', { ascending: true });
         if (error) throw error;
         setLinks(data || []);
+      } else if (activeTab === 'profiles') {
+        await fetchProfiles();
       } else if (activeTab === 'fakultas') {
         const { data, error } = await supabase
           .from('directory_fakultas')
@@ -271,6 +286,17 @@ export default function App() {
     setHmjInstagram('');
     setHmjGroupLink('');
 
+    setProfileKey('');
+    setProfileTitle('');
+    setProfileBio('');
+    setProfilePhoto('');
+    setProfileBgColor('#F5F5F5');
+    setProfileUrlBanner('');
+    setProfileSocialFacebook('');
+    setProfileSocialInstagram('');
+    setProfileSocialWeb('');
+    setProfileSocialEmail('');
+
     setIsDialogOpen(true);
   };
 
@@ -304,6 +330,17 @@ export default function App() {
       setHmjWhatsapp(item.whatsapp || '');
       setHmjInstagram(item.instagram || '');
       setHmjGroupLink(item.group_link || '');
+    } else if (activeTab === 'profiles') {
+      setProfileKey(item.key);
+      setProfileTitle(item.title);
+      setProfileBio(item.bio || '');
+      setProfilePhoto(item.photo || '');
+      setProfileBgColor(item.bg_color || '#F5F5F5');
+      setProfileUrlBanner(item.url_banner || '');
+      setProfileSocialFacebook(item.social_facebook || '');
+      setProfileSocialInstagram(item.social_instagram || '');
+      setProfileSocialWeb(item.social_web || '');
+      setProfileSocialEmail(item.social_email || '');
     }
 
     setIsDialogOpen(true);
@@ -407,6 +444,28 @@ export default function App() {
           await executeSecureWrite('directory_hmj', 'update', payload, currentEditItem.id);
           showToast('success', 'HMJ berhasil diperbarui!');
         }
+      } else if (activeTab === 'profiles') {
+        const payload = {
+          key: profileKey,
+          title: profileTitle,
+          bio: profileBio,
+          photo: profilePhoto,
+          bg_color: profileBgColor,
+          url_banner: profileUrlBanner,
+          social_facebook: profileSocialFacebook,
+          social_instagram: profileSocialInstagram,
+          social_web: profileSocialWeb,
+          social_email: profileSocialEmail
+        };
+
+        if (dialogMode === 'add') {
+          await executeSecureWrite('profiles', 'insert', payload);
+          showToast('success', 'Halaman Linktree berhasil ditambahkan!');
+        } else {
+          await executeSecureWrite('profiles', 'update', payload, currentEditItem.key);
+          showToast('success', 'Halaman Linktree berhasil diperbarui!');
+        }
+        fetchProfiles();
       }
 
       setIsDialogOpen(false);
@@ -430,6 +489,9 @@ export default function App() {
         await executeSecureWrite('directory_prodi', 'delete', {}, id);
       } else if (activeTab === 'hmj') {
         await executeSecureWrite('directory_hmj', 'delete', {}, id);
+      } else if (activeTab === 'profiles') {
+        await executeSecureWrite('profiles', 'delete', {}, id);
+        fetchProfiles();
       }
 
       showToast('success', 'Data berhasil dihapus.');
@@ -452,6 +514,8 @@ export default function App() {
       return dirProdi.filter(item => item.name.toLowerCase().includes(q) || (item.status && item.status.toLowerCase().includes(q)));
     } else if (activeTab === 'hmj') {
       return dirHmj.filter(item => item.name.toLowerCase().includes(q) || (item.contact_person && item.contact_person.toLowerCase().includes(q)));
+    } else if (activeTab === 'profiles') {
+      return profiles.filter(p => p.title.toLowerCase().includes(q) || p.key.toLowerCase().includes(q));
     }
     return [];
   };
@@ -558,6 +622,19 @@ export default function App() {
           {/* Directory management tabs only available for admin */}
           {operator.role === 'admin' && (
             <>
+              <div className="text-slate-600 text-xs font-semibold px-4 pt-4 pb-2 uppercase tracking-wider block">Kelola Halaman</div>
+              <button
+                onClick={() => setActiveTab('profiles')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                  activeTab === 'profiles'
+                    ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
+                    : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                }`}
+              >
+                <Layout className="h-4 w-4" />
+                Halaman Linktree
+              </button>
+
               <div className="text-slate-600 text-xs font-semibold px-4 pt-4 pb-2 uppercase tracking-wider block">Direktori Maba</div>
               <button
                 onClick={() => setActiveTab('fakultas')}
@@ -626,12 +703,14 @@ export default function App() {
           <div>
             <h2 className="text-lg font-bold text-slate-900">
               {activeTab === 'links' && 'Manajemen Linktree'}
+              {activeTab === 'profiles' && 'Manajemen Halaman Linktree'}
               {activeTab === 'fakultas' && 'Direktori Lembaga & TU'}
               {activeTab === 'prodi' && 'Direktori Program Studi S1'}
               {activeTab === 'hmj' && 'Direktori Himpunan Mahasiswa'}
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-slate-500 text-xs mt-1">
               {activeTab === 'links' && 'Kelola daftar tautan eksternal dan beasiswa pada masing-masing profile prodi.'}
+              {activeTab === 'profiles' && 'Buat, edit, dan hapus profil/halaman Linktree prodi/lembaga.'}
               {activeTab === 'fakultas' && 'Kelola daftar lembaga, nomor helpdesk, dan link grup angkatan maba fakultas.'}
               {activeTab === 'prodi' && 'Kelola info website prodi dan akreditasi prodi.'}
               {activeTab === 'hmj' && 'Kelola kontak ketua himpunan dan formulir grup Whatsapp maba.'}
@@ -709,6 +788,15 @@ export default function App() {
                         <th className="px-6 py-3.5">Judul Link</th>
                         <th className="px-6 py-3.5">Kategori</th>
                         <th className="px-6 py-3.5">Deskripsi</th>
+                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                      </>
+                    )}
+                    {activeTab === 'profiles' && (
+                      <>
+                        <th className="px-6 py-3.5">ID Halaman (Key)</th>
+                        <th className="px-6 py-3.5">Nama Halaman</th>
+                        <th className="px-6 py-3.5">Bio</th>
+                        <th className="px-6 py-3.5">Tampilan Live</th>
                         <th className="px-6 py-3.5 text-right">Aksi</th>
                       </>
                     )}
@@ -872,6 +960,34 @@ export default function App() {
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
                         <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                    </tr>
+                  ))}
+
+                  {/* Profiles rows */}
+                  {activeTab === 'profiles' && filteredItems.map((item) => (
+                    <tr key={item.key} className="hover:bg-slate-50/50 transition-all">
+                      <td className="px-6 py-4 font-mono font-bold text-slate-900">{item.key}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {item.photo && (
+                            <img src={item.photo} alt={item.title} className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0" />
+                          )}
+                          <div className="font-semibold text-slate-900">{item.title}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 max-w-xs truncate">{item.bio || '-'}</td>
+                      <td className="px-6 py-4">
+                        <a href={`/?p=${item.key}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
+                          Lihat Halaman <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => handleDelete(item.key)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -1171,6 +1287,132 @@ export default function App() {
                       onChange={(e) => setHmjGroupLink(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-rose-500 text-xs"
                     />
+                  </div>
+                </>
+              )}
+
+              {/* Form 5: Profiles management inputs */}
+              {activeTab === 'profiles' && (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">ID Halaman (Key / Slug)</label>
+                    <input
+                      type="text"
+                      required
+                      disabled={dialogMode === 'edit'}
+                      placeholder="Contoh: lpm (huruf kecil, tanpa spasi)"
+                      value={profileKey}
+                      onChange={(e) => setProfileKey(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">Alamat url halaman Anda akan menjadi: <code>https://lifeatfsh.uinsgd.ac.id/?p={profileKey || 'slug'}</code></p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Judul Halaman / Nama Lembaga</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Lembaga Penjaminan Mutu"
+                      value={profileTitle}
+                      onChange={(e) => setProfileTitle(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Deskripsi / Bio Singkat</label>
+                    <textarea
+                      placeholder="Contoh: Layanan penjaminan mutu fakultas..."
+                      value={profileBio}
+                      onChange={(e) => setProfileBio(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs min-h-[60px]"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">URL Gambar Logo / Photo</label>
+                    <input
+                      type="text"
+                      placeholder="https://ik.imagekit.io/..."
+                      value={profilePhoto}
+                      onChange={(e) => setProfilePhoto(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Background Color (Hex/CSS)</label>
+                      <input
+                        type="text"
+                        placeholder="Contoh: #F5F5F5"
+                        value={profileBgColor}
+                        onChange={(e) => setProfileBgColor(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">URL Gambar Banner</label>
+                      <input
+                        type="text"
+                        placeholder="https://ik.imagekit.io/..."
+                        value={profileUrlBanner}
+                        onChange={(e) => setProfileUrlBanner(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pt-2 border-t border-slate-100">Media Sosial & Kontak</div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Website Resmi</label>
+                      <input
+                        type="text"
+                        placeholder="https://lpm.uinsgd.ac.id"
+                        value={profileSocialWeb}
+                        onChange={(e) => setProfileSocialWeb(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Instagram URL</label>
+                      <input
+                        type="text"
+                        placeholder="https://instagram.com/lpm.uinsgd"
+                        value={profileSocialInstagram}
+                        onChange={(e) => setProfileSocialInstagram(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Facebook URL</label>
+                      <input
+                        type="text"
+                        placeholder="https://facebook.com/lpm.uinsgd"
+                        value={profileSocialFacebook}
+                        onChange={(e) => setProfileSocialFacebook(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Email Resmi</label>
+                      <input
+                        type="email"
+                        placeholder="lpm@uinsgd.ac.id"
+                        value={profileSocialEmail}
+                        onChange={(e) => setProfileSocialEmail(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
                   </div>
                 </>
               )}
