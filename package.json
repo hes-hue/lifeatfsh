@@ -4,7 +4,7 @@
   "description": "Layanan Linktree & Direktori Fakultas Syariah dan Hukum UIN SGD Bandung",
   "main": "build.js",
   "scripts": {
-    "build": "npm run build --prefix admin-src && node build.js",
+    "build": "npm i --prefix admin-src && npm run build --prefix admin-src && node build.js",
     "dev": "npx http-server -p 8080"
   },
   "keywords": [],
