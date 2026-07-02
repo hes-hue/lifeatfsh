@@ -342,3 +342,30 @@ BEGIN
   RETURN result_json;
 END;
 $$;
+
+
+-- --------------------------------------------------------------------
+-- 4. INSERT DEMO TWIBBON CAMPAIGNS (Seeding Data)
+-- --------------------------------------------------------------------
+INSERT INTO public.twibbon_campaigns (slug, title, description, frame_url, profile_key)
+VALUES 
+(
+  'maba-hk-2026',
+  'Twibbon Mahasiswa Baru Hukum Keluarga 2026',
+  'Selamat datang mahasiswa baru Program Studi Hukum Keluarga (Ahwal Al-Syakhsiyah) FSH UIN Sunan Gunung Djati Bandung! Pasang foto terbaik Anda dan tunjukkan kesiapan belajar.',
+  'https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/ZISWA.webp',
+  'hk'
+),
+(
+  'milad-fsh-58',
+  'Twibbon Milad ke-58 Fakultas Syariah & Hukum',
+  'Ayo semarakkan Hari Jadi ke-58 Fakultas Syariah dan Hukum UIN Sunan Gunung Djati Bandung. FSH Unggul, FSH Kompetitif, FSH Bermartabat!',
+  'https://fsh.uinsgd.ac.id/wp-content/uploads/2026/02/P2MU-foto1.webp',
+  'fsh'
+)
+ON CONFLICT (slug) DO UPDATE 
+SET 
+  title = EXCLUDED.title,
+  description = EXCLUDED.description,
+  frame_url = EXCLUDED.frame_url,
+  profile_key = EXCLUDED.profile_key;

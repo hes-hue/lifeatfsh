@@ -112,7 +112,7 @@ p, .profile-bio, .link-row-desc, .prodi-desc, .directory-meta, .ticker-text, .em
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border-light);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   align-items: center;
   justify-content: center;
   z-index: 100;
