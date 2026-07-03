@@ -761,8 +761,8 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 font-sans selection:bg-rose-500 selection:text-white">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-slate-950 text-slate-100 flex flex-col border-r border-slate-900 shrink-0">
-        <div className="p-6 border-b border-slate-900">
+      <aside className="w-full md:w-64 bg-[#0F172A] text-slate-100 flex flex-col border-r border-slate-800 shrink-0">
+        <div className="p-6 border-b border-slate-800">
           <div className="font-bold text-base tracking-tight text-white">FSH Linktree CMS</div>
           <div className="text-xs text-rose-400 mt-1 uppercase font-semibold tracking-wider">
             {operator.role === 'admin' ? 'Fakultas Admin' : `HMJ : ${operator.profile_key.toUpperCase()}`}
@@ -772,10 +772,10 @@ export default function App() {
         <nav className="flex-1 px-4 py-6 space-y-1.5">
           <button
             onClick={() => setActiveTab('links')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
               activeTab === 'links'
-                ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
-                : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
+                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
             }`}
           >
             <FolderOpen className="h-4 w-4" />
@@ -784,10 +784,10 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('static_pages')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
               activeTab === 'static_pages'
-                ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
-                : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
+                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
             }`}
           >
             <FileText className="h-4 w-4" />
@@ -798,8 +798,8 @@ export default function App() {
             onClick={() => setActiveTab('twibbon')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
               activeTab === 'twibbon'
-                ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
-                : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
+                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
             }`}
           >
             <Image className="h-4 w-4" />
@@ -825,10 +825,10 @@ export default function App() {
                 }
                 setActiveTab('profiles');
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                 activeTab === 'profiles'
-                  ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
-                  : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                  ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
+                  : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
               }`}
             >
               <Layout className="h-4 w-4" />
@@ -839,26 +839,26 @@ export default function App() {
           {/* Directory management tabs only available for admin */}
           {operator.role === 'admin' && (
             <>
-              <div className="text-slate-600 text-xs font-semibold px-4 pt-4 pb-2 uppercase tracking-wider block">Kelola Halaman</div>
+              <div className="text-slate-500 text-[10px] font-bold px-4 pt-4 pb-2 uppercase tracking-wider block">Kelola Halaman</div>
               <button
                 onClick={() => setActiveTab('profiles')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                   activeTab === 'profiles'
-                    ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
-                    : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                    ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
+                    : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <Layout className="h-4 w-4" />
                 Halaman Linktree
               </button>
 
-              <div className="text-slate-600 text-xs font-semibold px-4 pt-4 pb-2 uppercase tracking-wider block">Direktori Maba</div>
+              <div className="text-slate-500 text-[10px] font-bold px-4 pt-4 pb-2 uppercase tracking-wider block">Direktori Maba</div>
               <button
                 onClick={() => setActiveTab('fakultas')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                   activeTab === 'fakultas'
-                    ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
-                    : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                    ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
+                    : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <Building className="h-4 w-4" />
@@ -867,10 +867,10 @@ export default function App() {
 
               <button
                 onClick={() => setActiveTab('prodi')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                   activeTab === 'prodi'
-                    ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
-                    : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                    ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
+                    : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <GraduationCap className="h-4 w-4" />
@@ -879,10 +879,10 @@ export default function App() {
 
               <button
                 onClick={() => setActiveTab('hmj')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                   activeTab === 'hmj'
-                    ? 'bg-rose-600/10 text-rose-400 border-l-4 border-rose-500 pl-3'
-                    : 'hover:bg-slate-900 text-slate-400 hover:text-slate-100'
+                    ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
+                    : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <Users className="h-4 w-4" />
@@ -893,9 +893,9 @@ export default function App() {
         </nav>
 
         {/* User profile footer */}
-        <div className="p-4 border-t border-slate-900 bg-slate-950/50 flex items-center justify-between">
+        <div className="p-4 border-t border-slate-800 bg-[#0A0F1D] flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-8 w-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-rose-400 shrink-0 font-bold uppercase text-xs">
+            <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-rose-400 shrink-0 font-bold uppercase text-xs">
               {operator.username[0]}
             </div>
             <div className="min-w-0">
@@ -906,7 +906,7 @@ export default function App() {
           <button
             onClick={handleLogout}
             title="Keluar"
-            className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-900 rounded-lg transition-all cursor-pointer"
+            className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
           </button>
@@ -953,9 +953,13 @@ export default function App() {
         </div>
 
         {activeTab === 'profiles' && operator.role === 'prodi' ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-6 border-b pb-3">Pengaturan Tampilan Halaman</h3>
-            
+          <div className="space-y-6 max-w-4xl">
+            {/* Form Title & Description Header */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-base font-bold text-slate-900">Pengaturan Tampilan & Informasi</h3>
+              <p className="text-slate-500 text-xs mt-1">Ubah identitas visual, bio prodi, dan info media sosial yang tampil pada halaman linktree Anda.</p>
+            </div>
+
             <form onSubmit={async (e) => {
               e.preventDefault();
               setDataLoading(true);
@@ -975,146 +979,170 @@ export default function App() {
                 await executeSecureWrite('profiles', 'update', payload, profileKey);
                 showToast('success', 'Profil halaman Anda berhasil diperbarui!');
                 fetchProfiles();
+                setIframeKey(k => k + 1);
               } catch (err) {
                 showToast('error', err.message || 'Gagal menyimpan perubahan.');
               } finally {
                 setDataLoading(false);
               }
-            }} className="space-y-5 max-w-3xl">
+            }} className="space-y-6">
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">ID Halaman (Key / Slug)</label>
-                  <input
-                    type="text"
-                    disabled
-                    value={profileKey}
-                    className="w-full px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 font-mono text-xs cursor-not-allowed focus:outline-none"
-                  />
-                  <p className="text-[10px] text-slate-400">Url halaman: <code>https://lifeatfsh.uinsgd.ac.id/{profileKey}</code></p>
+              {/* Card 1: Informasi Dasar */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="text-rose-500 text-xs">📝</span>
+                  <h4 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Informasi Dasar</h4>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Judul Halaman / Nama Lembaga</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nama Lembaga / Jurusan"
-                    value={profileTitle}
-                    onChange={(e) => setProfileTitle(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Deskripsi / Bio Singkat</label>
-                <textarea
-                  placeholder="Keterangan singkat mengenai prodi/layanan..."
-                  value={profileBio}
-                  onChange={(e) => setProfileBio(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs min-h-[80px]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Logo / Photo URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://ik.imagekit.io/..."
-                    value={profilePhoto}
-                    onChange={(e) => setProfilePhoto(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Banner Image URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://ik.imagekit.io/..."
-                    value={profileUrlBanner}
-                    onChange={(e) => setProfileUrlBanner(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Background Color</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={profileBgColor && profileBgColor.startsWith('#') && profileBgColor.length === 7 ? profileBgColor : '#f5f5f5'}
-                      onChange={(e) => setProfileBgColor(e.target.value)}
-                      className="w-10 h-9 p-0 bg-transparent border-0 cursor-pointer"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">ID Halaman (Key / Slug)</label>
                     <input
                       type="text"
-                      placeholder="#F5F5F5"
-                      value={profileBgColor}
-                      onChange={(e) => setProfileBgColor(e.target.value)}
-                      className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      disabled
+                      value={profileKey}
+                      className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 font-mono text-xs cursor-not-allowed focus:outline-none"
+                    />
+                    <p className="text-[10px] text-slate-400">Url aktif: <code>lifeatfsh.uinsgd.ac.id/{profileKey}</code></p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Judul Halaman / Nama Lembaga *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Nama Lembaga / Jurusan"
+                      value={profileTitle}
+                      onChange={(e) => setProfileTitle(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Deskripsi / Bio Singkat</label>
+                  <textarea
+                    placeholder="Keterangan singkat mengenai prodi/layanan..."
+                    value={profileBio}
+                    onChange={(e) => setProfileBio(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs min-h-[90px] resize-y"
+                  />
+                </div>
+              </div>
+
+              {/* Card 2: Tampilan & Media */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="text-rose-500 text-xs">🎨</span>
+                  <h4 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Tampilan & Media</h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Logo / Foto URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://ik.imagekit.io/..."
+                      value={profilePhoto}
+                      onChange={(e) => setProfilePhoto(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Banner Image URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://ik.imagekit.io/..."
+                      value={profileUrlBanner}
+                      onChange={(e) => setProfileUrlBanner(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Warna Latar Belakang</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={profileBgColor && profileBgColor.startsWith('#') && profileBgColor.length === 7 ? profileBgColor : '#f5f5f5'}
+                        onChange={(e) => setProfileBgColor(e.target.value)}
+                        className="w-11 h-9 p-0 bg-transparent border-0 cursor-pointer shrink-0 rounded-lg overflow-hidden"
+                      />
+                      <input
+                        type="text"
+                        placeholder="#F5F5F5"
+                        value={profileBgColor}
+                        onChange={(e) => setProfileBgColor(e.target.value)}
+                        className="flex-1 px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Media Sosial & Kontak */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <span className="text-rose-500 text-xs">🌐</span>
+                  <h4 className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Media Sosial & Kontak</h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Website Resmi</label>
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={profileSocialWeb}
+                      onChange={(e) => setProfileSocialWeb(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Instagram URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://instagram.com/..."
+                      value={profileSocialInstagram}
+                      onChange={(e) => setProfileSocialInstagram(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Facebook URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://facebook.com/..."
+                      value={profileSocialFacebook}
+                      onChange={(e) => setProfileSocialFacebook(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Email Resmi</label>
+                    <input
+                      type="email"
+                      placeholder="nama@uinsgd.ac.id"
+                      value={profileSocialEmail}
+                      onChange={(e) => setProfileSocialEmail(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 focus:bg-white transition-all text-xs"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pt-4 border-t border-slate-100">Media Sosial & Kontak</div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Website Resmi</label>
-                  <input
-                    type="text"
-                    placeholder="https://..."
-                    value={profileSocialWeb}
-                    onChange={(e) => setProfileSocialWeb(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Instagram URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://instagram.com/..."
-                    value={profileSocialInstagram}
-                    onChange={(e) => setProfileSocialInstagram(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Facebook URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://facebook.com/..."
-                    value={profileSocialFacebook}
-                    onChange={(e) => setProfileSocialFacebook(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Email Resmi</label>
-                  <input
-                    type="email"
-                    placeholder="nama@uinsgd.ac.id"
-                    value={profileSocialEmail}
-                    onChange={(e) => setProfileSocialEmail(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex justify-end">
+              {/* Form Action Bar */}
+              <div className="flex justify-end pt-2">
                 <button
                   type="submit"
                   disabled={dataLoading}
-                  className="px-6 py-2.5 bg-[#E0004D] hover:bg-[#c20042] text-white rounded-xl font-bold text-xs shadow-md shadow-rose-500/10 cursor-pointer transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-[#E0004D] hover:bg-[#c20042] text-white rounded-xl font-semibold text-xs shadow-md shadow-rose-500/10 hover:shadow-rose-500/20 cursor-pointer transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {dataLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
                 </button>
@@ -1467,18 +1495,34 @@ export default function App() {
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Preview</span>
             <button
               onClick={() => setIframeKey(k => k + 1)}
-              className="text-xs flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg shadow-sm transition-all cursor-pointer font-medium"
+              className="text-xs flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 rounded-lg shadow-sm transition-all cursor-pointer font-medium"
             >
               <span>🔄</span> Refresh Preview
             </button>
           </div>
           
-          {/* Iframe Viewport Wrapper */}
-          <div className="w-full max-w-[340px] flex-1 min-h-0 bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden flex flex-col relative">
+          {/* Browser-style Viewport Wrapper */}
+          <div className="w-full max-w-[340px] flex-1 min-h-0 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col relative">
+            {/* Browser Header Bar */}
+            <div className="bg-slate-100/80 border-b border-slate-200 px-4 py-3 flex items-center gap-3 shrink-0">
+              {/* Window Controls */}
+              <div className="flex gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FF5F56]"></span>
+                <span className="w-2 h-2 rounded-full bg-[#FFBD2E]"></span>
+                <span className="w-2 h-2 rounded-full bg-[#27C93F]"></span>
+              </div>
+              {/* Mock Address Bar */}
+              <div className="flex-1 bg-white border border-slate-200/60 rounded-lg py-1 px-2.5 flex items-center gap-1.5 text-[9px] text-slate-400 font-mono truncate select-all">
+                <span>🔒</span>
+                <span className="text-slate-600 font-medium">lifeatfsh.uinsgd.ac.id</span>
+                <span className="text-slate-400">/{selectedProfile === 'fsh' ? '' : selectedProfile}</span>
+              </div>
+            </div>
+
             <iframe
               key={iframeKey}
               src={selectedProfile === 'fsh' ? `/?key=${iframeKey}` : `/${selectedProfile}/?key=${iframeKey}`}
-              className="w-full h-full border-none"
+              className="w-full h-full border-none bg-slate-50"
               title="Live Linktree Preview"
             />
           </div>
