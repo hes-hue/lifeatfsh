@@ -157,6 +157,14 @@ export default function App() {
     setToast({ type, message });
   };
 
+  const normalizeSlug = (value) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-');
+
   // ==========================================
   // API SERVICE CALLS
   // ==========================================
@@ -1159,7 +1167,7 @@ export default function App() {
                       </td>
                       <td className="px-6 py-4 text-slate-500 max-w-xs truncate">{item.bio || '-'}</td>
                       <td className="px-6 py-4">
-                        <a href={`/?p=${item.key}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
+                        <a href={`/${item.key}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
                           Lihat Halaman <ExternalLink className="h-2.5 w-2.5" />
                         </a>
                       </td>
@@ -1524,12 +1532,12 @@ export default function App() {
                       type="text"
                       required
                       disabled={dialogMode === 'edit'}
-                      placeholder="Contoh: lpm (huruf kecil, tanpa spasi)"
+                      placeholder="Contoh: hk, hes, ih"
                       value={profileKey}
-                      onChange={(e) => setProfileKey(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))}
+                      onChange={(e) => setProfileKey(normalizeSlug(e.target.value))}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs disabled:bg-slate-100 disabled:cursor-not-allowed"
                     />
-                    <p className="text-[10px] text-slate-400 mt-1">Alamat url halaman Anda akan menjadi: <code>https://lifeatfsh.uinsgd.ac.id/?p={profileKey || 'slug'}</code></p>
+                    <p className="text-[10px] text-slate-400 mt-1">Alamat url halaman Anda akan menjadi: <code>https://lifeatfsh.uinsgd.ac.id/{profileKey || 'slug'}</code></p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -1665,10 +1673,10 @@ export default function App() {
                         disabled={dialogMode === 'edit'}
                         placeholder="Contoh: panduan-krs"
                         value={pageSlug}
-                        onChange={(e) => setPageSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))}
+                        onChange={(e) => setPageSlug(normalizeSlug(e.target.value))}
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs disabled:bg-slate-100 disabled:cursor-not-allowed"
                       />
-                      <p className="text-[9px] text-slate-400 mt-0.5">Alamat: <code>/?page={pageSlug || 'slug'}</code></p>
+                      <p className="text-[9px] text-slate-400 mt-0.5">Alamat: <code>/{pageProfileKey || 'profil'}/{pageSlug || 'slug'}</code></p>
                     </div>
                   </div>
 
@@ -1809,7 +1817,7 @@ export default function App() {
                         disabled={dialogMode === 'edit'}
                         placeholder="Contoh: maba-fsh-2026"
                         value={campaignSlug}
-                        onChange={(e) => setCampaignSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))}
+                        onChange={(e) => setCampaignSlug(normalizeSlug(e.target.value))}
                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs disabled:bg-slate-100 disabled:cursor-not-allowed"
                       />
                       <p className="text-[9px] text-slate-400 mt-0.5">Alamat: <code>/twibbon/{campaignSlug || 'slug'}</code></p>

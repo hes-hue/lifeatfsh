@@ -4,6 +4,7 @@
   "rewrites": [
     { "source": "/twibbon", "destination": "/index.html" },
     { "source": "/twibbon/:slug", "destination": "/index.html" },
+    { "source": "/:profile(hk|hes|pm|hpi|htn|ih|laboratorium|akademik|informasi|wag-prodi)", "destination": "/:profile/index.html" },
     { "source": "/:profile(hk|hes|pm|hpi|htn|ih|laboratorium|akademik|informasi|wag-prodi)/:slug", "destination": "/:profile/index.html" }
   ]
 }

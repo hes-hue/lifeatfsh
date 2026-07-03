@@ -13,11 +13,31 @@ CREATE TABLE IF NOT EXISTS public.twibbon_campaigns (
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+CREATE OR REPLACE FUNCTION public.normalize_slug(input text)
+RETURNS text
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT NULLIF(
+    regexp_replace(
+      regexp_replace(lower(trim(coalesce(input, ''))), '[^a-z0-9]+', '-', 'g'),
+      '(^-+|-+$)',
+      '',
+      'g'
+    ),
+    ''
+  );
+$$;
+
 -- 2. Enable RLS and public read access
 ALTER TABLE public.twibbon_campaigns ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow public read twibbon_campaigns" ON public.twibbon_campaigns;
 CREATE POLICY "Allow public read twibbon_campaigns" ON public.twibbon_campaigns FOR SELECT USING (true);
+
+-- Clean up previous overloads so RPC resolution stays unambiguous
+DROP FUNCTION IF EXISTS public.execute_secure_write(op_username text, op_password text, target_table text, action_type text, row_data jsonb, row_id text);
+DROP FUNCTION IF EXISTS public.execute_secure_write(target_table text, action_type text, row_data jsonb, row_id text, op_username text, op_password text);
 
 -- 3. Replace execute_secure_write function with twibbon_campaigns support
 CREATE OR REPLACE FUNCTION public.execute_secure_write(
@@ -38,6 +58,7 @@ DECLARE
   row_uuid uuid;
   row_int integer;
   result_json jsonb;
+  clean_slug text;
 BEGIN
   -- 1. Authenticate operator
   SELECT * INTO op_record FROM public.operators WHERE username = op_username;
@@ -175,10 +196,20 @@ BEGIN
     END IF;
 
   ELSIF target_table = 'twibbon_campaigns' THEN
+    clean_slug := NULL;
+    IF row_data ? 'slug' THEN
+      clean_slug := public.normalize_slug(row_data->>'slug');
+      IF clean_slug IS NULL THEN
+        RAISE EXCEPTION 'Slug cannot be empty after normalization';
+      END IF;
+    ELSIF action_type = 'insert' THEN
+      RAISE EXCEPTION 'Slug is required';
+    END IF;
+
     IF action_type = 'insert' THEN
       INSERT INTO public.twibbon_campaigns (slug, title, description, frame_url, profile_key)
       VALUES (
-        row_data->>'slug',
+        clean_slug,
         row_data->>'title',
         row_data->>'description',
         row_data->>'frame_url',
@@ -188,7 +219,7 @@ BEGIN
       row_uuid := row_id::uuid;
       UPDATE public.twibbon_campaigns
       SET
-        slug = COALESCE(row_data->>'slug', slug),
+        slug = COALESCE(clean_slug, slug),
         title = COALESCE(row_data->>'title', title),
         description = row_data->>'description',
         frame_url = COALESCE(row_data->>'frame_url', frame_url)

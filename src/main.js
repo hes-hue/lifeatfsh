@@ -66,6 +66,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     return ICONS.link;
   }
 
+  function getCanonicalProfilePath(profileKey) {
+    return profileKey === "fsh" ? "/" : `/${profileKey}`;
+  }
+
   // Load and merge LocalStorage edits on startup
   function loadAndMergeEdits() {
     const localEditsRaw = localStorage.getItem("fsh_linktree_edits");
@@ -246,20 +250,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       // Check search URL parameters
       const urlParams = new URLSearchParams(window.location.search);
-      const pParam = urlParams.get("p") || urlParams.get("page");
-      if (pParam) {
-        if (DATA.profiles[pParam]) {
-          activeProfile = pParam;
-          if (activeProfile === "informasi") {
-            renderInformasiPage();
-          } else if (activeProfile === "wag-prodi") {
-            renderWagProdiPage();
-          } else {
-            renderProfileView(activeProfile);
-          }
-        } else {
-          fetchAndRenderStaticPage(pParam);
+      const legacyProfileParam = urlParams.get("p");
+      const pageParam = urlParams.get("page");
+      if (legacyProfileParam) {
+        if (DATA.profiles[legacyProfileParam]) {
+          window.location.replace(getCanonicalProfilePath(legacyProfileParam));
+          return;
         }
+        fetchAndRenderStaticPage(legacyProfileParam);
+      } else if (pageParam) {
+        fetchAndRenderStaticPage(pageParam);
       } else {
         switchTab("home", true);
       }
@@ -356,7 +356,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
       document.getElementById("btn-back-home").addEventListener("click", () => {
         if (page.profile_key && page.profile_key !== "fsh") {
-          window.location.href = `/${page.profile_key}/`;
+          window.location.href = `/${page.profile_key}`;
         } else {
           window.location.href = "/";
         }
@@ -558,7 +558,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     featuredLinks.forEach(lnk => {
-      const href = lnk.url.startsWith("/") ? `.${lnk.url}` : lnk.url;
+      const href = lnk.url;
       const target = lnk.url.startsWith("/") ? "" : 'target="_blank"';
       
       container.innerHTML += `
@@ -663,7 +663,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelectorAll(".prodi-card").forEach(card => {
       card.addEventListener("click", () => {
         const key = card.getAttribute("data-key");
-        renderProfileView(key);
+        window.location.href = `/${key}`;
       });
     });
   }
@@ -747,7 +747,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 </div>
               </div>
               <div class="directory-actions">
-                <a href="#" class="action-btn web btn-go-prodi" data-key="${prodiKey}">${ICONS.link} Layanan Linktree</a>
+                <a href="/${prodiKey}" class="action-btn web btn-go-prodi" data-key="${prodiKey}">${ICONS.link} Layanan Linktree</a>
                 ${p.instagram ? `<a href="${p.instagram}" target="_blank" class="action-btn ig">${ICONS.instagram} Instagram</a>` : ''}
                 ${p.web ? `<a href="${p.web}" target="_blank" class="action-btn web">${ICONS.globe} Web</a>` : ''}
               </div>
@@ -791,13 +791,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     } else {
       container.innerHTML = html;
-      document.querySelectorAll(".btn-go-prodi").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          const key = btn.getAttribute("data-key");
-          renderProfileView(key);
-        });
-      });
     }
   }
 
@@ -907,7 +900,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
           ` : `
-            <a href="../" class="back-hub-floating" title="Kembali ke Portal Fakultas" style="position: static; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-slate); display: flex; align-items: center; justify-content: center; border: none; text-decoration: none;">
+            <a href="/" class="back-hub-floating" title="Kembali ke Portal Fakultas" style="position: static; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-slate); display: flex; align-items: center; justify-content: center; border: none; text-decoration: none;">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             </a>
           `}
@@ -971,8 +964,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             <tbody>
               ${DATA.directory.prodi.map(p => {
                 const key = p.link.replace("/", "");
-                const relativeLink = window.CURRENT_PROFILE ? `../${key}/` : `?p=${key}`;
-                return `
+                const relativeLink = window.CURRENT_PROFILE ? `../${key}` : `/${key}`;
+        return `
                   <tr>
                     <td><strong>${escapeHtml(p.name)}</strong> <span class="badge-accreditation-sm">${escapeHtml(p.status)}</span></td>
                     <td style="text-align: center;">
@@ -1037,17 +1030,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           }, 1500);
         });
       });
-    });
-
-    // Bind direct prodi linktree buttons
-    document.querySelectorAll(".btn-prodi-direct").forEach(btn => {
-      if (!window.CURRENT_PROFILE) {
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          const key = btn.getAttribute("data-key");
-          renderProfileView(key);
-        });
-      }
     });
 
     // Bind back button
@@ -1124,7 +1106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
           ` : `
-            <a href="../" class="back-hub-floating" title="Kembali ke Portal Fakultas" style="position: static; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-slate); display: flex; align-items: center; justify-content: center; border: none; text-decoration: none;">
+            <a href="/" class="back-hub-floating" title="Kembali ke Portal Fakultas" style="position: static; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-slate); display: flex; align-items: center; justify-content: center; border: none; text-decoration: none;">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             </a>
           `}
@@ -1190,7 +1172,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
           ` : `
-            <a href="../" class="back-hub-floating" title="Kembali ke Portal Fakultas" style="position: static; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-slate); display: flex; align-items: center; justify-content: center; border: none; text-decoration: none;">
+            <a href="/" class="back-hub-floating" title="Kembali ke Portal Fakultas" style="position: static; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-slate); display: flex; align-items: center; justify-content: center; border: none; text-decoration: none;">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             </a>
           `}
@@ -1226,13 +1208,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const linksContainer = document.getElementById("profile-links-container");
 
-    Object.keys(groupedLinks).forEach(cat => {
-      const isOpen = forceOpenCategory === cat || Object.keys(groupedLinks).length === 1;
+    Object.keys(groupedLinks).forEach((cat, idx) => {
+      const isOpen = idx === 0 || forceOpenCategory === cat || Object.keys(groupedLinks).length === 1;
       
       let itemsHtml = "";
       groupedLinks[cat].forEach(lnk => {
         const isRelative = lnk.url.startsWith("/");
-        const href = isRelative ? `.${lnk.url}` : (lnk.url.startsWith("http") ? lnk.url : `https://${lnk.url}`);
+        const href = isRelative ? lnk.url : (lnk.url.startsWith("http") ? lnk.url : `https://${lnk.url}`);
         const target = isRelative ? "" : 'target="_blank"';
         const dynamicIcon = getIconForLink(lnk.title, lnk.category);
 

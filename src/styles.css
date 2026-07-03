@@ -854,7 +854,7 @@ p, .profile-bio, .link-row-desc, .prodi-desc, .directory-meta, .ticker-text, .em
 
 .link-row-title {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--text-dark);
 }
 
