@@ -759,51 +759,72 @@ export default function App() {
   // RENDER CMS DASHBOARD
   // ==========================================
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 font-sans selection:bg-rose-500 selection:text-white">
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#F8FAFC] font-sans selection:bg-slate-950 selection:text-white">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-[#0F172A] text-slate-100 flex flex-col border-r border-slate-800 shrink-0">
-        <div className="p-6 border-b border-slate-800">
-          <div className="font-bold text-base tracking-tight text-white">FSH Linktree CMS</div>
-          <div className="text-xs text-rose-400 mt-1 uppercase font-semibold tracking-wider">
-            {operator.role === 'admin' ? 'Fakultas Admin' : `HMJ : ${operator.profile_key.toUpperCase()}`}
+      <aside className="w-full md:w-64 bg-white text-slate-800 flex flex-col border-r border-slate-200 shrink-0">
+        <div className="p-5 border-b border-slate-200/80 flex items-center justify-between">
+          <div>
+            <div className="font-bold text-xs text-slate-900 tracking-tight flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded bg-slate-900"></span>
+              FSH Linktree CMS
+            </div>
+            <div className="text-[9px] text-slate-400 mt-0.5 uppercase font-bold tracking-wider">
+              {operator.role === 'admin' ? 'Fakultas Admin' : `HMJ : ${operator.profile_key.toUpperCase()}`}
+            </div>
           </div>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-1.5">
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          <div className="text-slate-400 text-[9px] font-bold px-3 pt-2 pb-1 uppercase tracking-widest block">Main Menu</div>
           <button
             onClick={() => setActiveTab('links')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'links'
-                ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                ? 'bg-slate-200/60 text-slate-900'
+                : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
             }`}
           >
-            <FolderOpen className="h-4 w-4" />
+            <FolderOpen className="h-4 w-4 text-slate-400" />
             Links Jurusan / Fakultas
+            {links.length > 0 && (
+              <span className="ml-auto bg-slate-900 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                {links.length}
+              </span>
+            )}
           </button>
 
           <button
             onClick={() => setActiveTab('static_pages')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'static_pages'
-                ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                ? 'bg-slate-200/60 text-slate-900'
+                : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
             }`}
           >
-            <FileText className="h-4 w-4" />
+            <FileText className="h-4 w-4 text-slate-400" />
             Halaman Statis Custom
+            {staticPages.length > 0 && (
+              <span className="ml-auto bg-slate-200 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                {staticPages.length}
+              </span>
+            )}
           </button>
 
           <button
             onClick={() => setActiveTab('twibbon')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'twibbon'
-                ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
-                : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                ? 'bg-slate-200/60 text-slate-900'
+                : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Image className="h-4 w-4" />
+            <Image className="h-4 w-4 text-slate-400" />
             Twibbon Kampanye
+            {twibbonCampaigns.length > 0 && (
+              <span className="ml-auto bg-slate-200 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                {twibbonCampaigns.length}
+              </span>
+            )}
           </button>
 
           {/* Settings tab available for prodi to edit their own profile details */}
@@ -825,13 +846,13 @@ export default function App() {
                 }
                 setActiveTab('profiles');
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'profiles'
-                  ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
-                  : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                  ? 'bg-slate-200/60 text-slate-900'
+                  : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Layout className="h-4 w-4" />
+              <Layout className="h-4 w-4 text-slate-400" />
               Tampilan & Informasi
             </button>
           )}
@@ -839,76 +860,96 @@ export default function App() {
           {/* Directory management tabs only available for admin */}
           {operator.role === 'admin' && (
             <>
-              <div className="text-slate-500 text-[10px] font-bold px-4 pt-4 pb-2 uppercase tracking-wider block">Kelola Halaman</div>
+              <div className="text-slate-400 text-[9px] font-bold px-3 pt-4 pb-1 uppercase tracking-widest block">Kelola Halaman</div>
               <button
                 onClick={() => setActiveTab('profiles')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === 'profiles'
-                    ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
-                    : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                    ? 'bg-slate-200/60 text-slate-900'
+                    : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <Layout className="h-4 w-4" />
+                <Layout className="h-4 w-4 text-slate-400" />
                 Halaman Linktree
+                {profiles.length > 0 && (
+                  <span className="ml-auto bg-slate-200 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                    {profiles.length}
+                  </span>
+                )}
               </button>
 
-              <div className="text-slate-500 text-[10px] font-bold px-4 pt-4 pb-2 uppercase tracking-wider block">Direktori Maba</div>
+              <div className="text-slate-400 text-[9px] font-bold px-3 pt-4 pb-1 uppercase tracking-widest block">Direktori Maba</div>
               <button
                 onClick={() => setActiveTab('fakultas')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === 'fakultas'
-                    ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
-                    : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                    ? 'bg-slate-200/60 text-slate-900'
+                    : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <Building className="h-4 w-4" />
+                <Building className="h-4 w-4 text-slate-400" />
                 Lembaga & TU
+                {dirFakultas.length > 0 && (
+                  <span className="ml-auto bg-slate-200 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                    {dirFakultas.length}
+                  </span>
+                )}
               </button>
 
               <button
                 onClick={() => setActiveTab('prodi')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === 'prodi'
-                    ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
-                    : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                    ? 'bg-slate-200/60 text-slate-900'
+                    : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <GraduationCap className="h-4 w-4" />
+                <GraduationCap className="h-4 w-4 text-slate-400" />
                 S1 Program Studi
+                {dirProdi.length > 0 && (
+                  <span className="ml-auto bg-slate-200 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                    {dirProdi.length}
+                  </span>
+                )}
               </button>
 
               <button
                 onClick={() => setActiveTab('hmj')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   activeTab === 'hmj'
-                    ? 'bg-rose-500/10 text-rose-400 border-l-4 border-rose-500 pl-3 font-semibold'
-                    : 'hover:bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                    ? 'bg-slate-200/60 text-slate-900'
+                    : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <Users className="h-4 w-4" />
+                <Users className="h-4 w-4 text-slate-400" />
                 Himpunan Mahasiswa
+                {dirHmj.length > 0 && (
+                  <span className="ml-auto bg-slate-200 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                    {dirHmj.length}
+                  </span>
+                )}
               </button>
             </>
           )}
         </nav>
 
         {/* User profile footer */}
-        <div className="p-4 border-t border-slate-800 bg-[#0A0F1D] flex items-center justify-between">
+        <div className="p-4 border-t border-slate-200 bg-white flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-rose-400 shrink-0 font-bold uppercase text-xs">
+            <div className="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 font-bold uppercase text-[10px]">
               {operator.username[0]}
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-slate-200 truncate">{operator.username}</div>
-              <div className="text-[10px] text-slate-500 truncate">{operator.role}</div>
+              <div className="text-[11px] font-bold text-slate-800 truncate">{operator.username}</div>
+              <div className="text-[9px] text-slate-400 truncate uppercase font-semibold">{operator.role}</div>
             </div>
           </div>
           <button
             onClick={handleLogout}
             title="Keluar"
-            className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-all cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-all cursor-pointer"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3.5 w-3.5" />
           </button>
         </div>
       </aside>
@@ -918,10 +959,29 @@ export default function App() {
         
         {/* Main Content Area */}
         <main className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto min-w-0">
-        {/* Top Header Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Breadcrumb Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <div className="flex items-center gap-1 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+              <span>Dashboard</span>
+              <span>/</span>
+              <span className="text-slate-600">
+                {activeTab === 'links' && 'Links'}
+                {activeTab === 'profiles' && 'Profiles'}
+                {activeTab === 'static_pages' && 'Static Pages'}
+                {activeTab === 'twibbon' && 'Twibbon'}
+                {activeTab === 'fakultas' && 'Lembaga'}
+                {activeTab === 'prodi' && 'Prodi'}
+                {activeTab === 'hmj' && 'HMJ'}
+              </span>
+              {selectedProfile && (
+                <>
+                  <span>/</span>
+                  <span className="text-slate-600 font-extrabold">{selectedProfile.toUpperCase()}</span>
+                </>
+              )}
+            </div>
+            <h2 className="text-sm font-bold text-slate-900 mt-1">
               {activeTab === 'links' && 'Manajemen Linktree'}
               {activeTab === 'profiles' && 'Manajemen Halaman Linktree'}
               {activeTab === 'static_pages' && 'Manajemen Halaman Statis'}
@@ -930,26 +990,7 @@ export default function App() {
               {activeTab === 'prodi' && 'Direktori Program Studi S1'}
               {activeTab === 'hmj' && 'Direktori Himpunan Mahasiswa'}
             </h2>
-            <p className="text-slate-500 text-xs mt-1">
-              {activeTab === 'links' && 'Kelola daftar tautan eksternal dan beasiswa pada masing-masing profile prodi.'}
-              {activeTab === 'profiles' && 'Buat, edit, dan hapus profil/halaman Linktree prodi/lembaga.'}
-              {activeTab === 'static_pages' && 'Buat dan kelola halaman informasi statis dengan styling teks.'}
-              {activeTab === 'twibbon' && 'Buat dan kelola bingkai foto kampanye twibbon tanpa penyimpanan server (Zero-Storage).'}
-              {activeTab === 'fakultas' && 'Kelola daftar lembaga, nomor helpdesk, dan link grup angkatan maba fakultas.'}
-              {activeTab === 'prodi' && 'Kelola info website prodi dan akreditasi prodi.'}
-              {activeTab === 'hmj' && 'Kelola kontak ketua himpunan dan formulir grup Whatsapp maba.'}
-            </p>
           </div>
-
-          {!(activeTab === 'profiles' && operator.role === 'prodi') && (
-            <button
-              onClick={openAddDialog}
-              className="self-start sm:self-center px-4 py-2.5 bg-[#E0004D] hover:bg-[#c20042] text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-rose-500/5 hover:shadow-rose-500/10 cursor-pointer active:scale-95 transition-all"
-            >
-              <Plus className="h-3.5 w-3.5 stroke-[3]" />
-              Tambah Data
-            </button>
-          )}
         </div>
 
         {activeTab === 'profiles' && operator.role === 'prodi' ? (
@@ -1152,17 +1193,17 @@ export default function App() {
           </div>
         ) : (
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
+          <div className="p-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
             <div className="flex flex-wrap items-center gap-3">
               {/* Profile dropdown selector for links tab */}
               {activeTab === 'links' && (
-                <div className="flex items-center gap-2">
-                  <ListFilter className="h-4 w-4 text-slate-400" />
+                <div className="flex items-center gap-1.5">
+                  <ListFilter className="h-3.5 w-3.5 text-slate-400" />
                   <select
                     value={selectedProfile}
                     onChange={(e) => setSelectedProfile(e.target.value)}
                     disabled={operator.role === 'prodi'}
-                    className="bg-white border border-slate-200 rounded-lg text-xs py-1.5 px-3 font-medium focus:outline-none focus:border-rose-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    className="bg-white border border-slate-200 rounded-lg text-xs py-1 px-2.5 font-semibold focus:outline-none focus:border-slate-900 disabled:bg-slate-100 disabled:cursor-not-allowed text-slate-700"
                   >
                     {operator.role === 'admin' ? (
                       profiles.map(p => (
@@ -1178,16 +1219,28 @@ export default function App() {
               )}
             </div>
 
-            {/* General Search Input */}
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Cari data..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 transition-all text-xs"
-              />
+            {/* Search Input & Compact Tambah Data Button */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-60">
+                <Search className="absolute left-3 top-2.5 h-3 w-3 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari data..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 focus:bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900/10 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all text-xs"
+                />
+              </div>
+
+              {!(activeTab === 'profiles' && operator.role === 'prodi') && (
+                <button
+                  onClick={openAddDialog}
+                  className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-sm hover:shadow active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
+                >
+                  <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                  Tambah Data
+                </button>
+              )}
             </div>
           </div>
 
@@ -1205,94 +1258,96 @@ export default function App() {
             ) : (
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold text-[10px]">
+                  <tr className="border-b border-slate-200/80 bg-slate-50 text-slate-400 uppercase tracking-wider font-bold text-[9px]">
                     {activeTab === 'links' && (
                       <>
-                        <th className="px-6 py-3.5">Urutan</th>
-                        <th className="px-6 py-3.5">Judul Link</th>
-                        <th className="px-6 py-3.5">Kategori</th>
-                        <th className="px-6 py-3.5">Deskripsi</th>
-                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                        <th className="px-4 py-2.5 w-16">Urutan</th>
+                        <th className="px-4 py-2.5">Judul Link</th>
+                        <th className="px-4 py-2.5">Kategori</th>
+                        <th className="px-4 py-2.5">Deskripsi</th>
+                        <th className="px-4 py-2.5 text-right">Aksi</th>
                       </>
                     )}
                     {activeTab === 'profiles' && (
                       <>
-                        <th className="px-6 py-3.5">ID Halaman (Key)</th>
-                        <th className="px-6 py-3.5">Nama Halaman</th>
-                        <th className="px-6 py-3.5">Bio</th>
-                        <th className="px-6 py-3.5">Tampilan Live</th>
-                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                        <th className="px-4 py-2.5 w-24">ID (Key)</th>
+                        <th className="px-4 py-2.5">Nama Halaman</th>
+                        <th className="px-4 py-2.5">Bio</th>
+                        <th className="px-4 py-2.5">Link</th>
+                        <th className="px-4 py-2.5 text-right">Aksi</th>
                       </>
                     )}
                     {activeTab === 'static_pages' && (
                       <>
-                        <th className="px-6 py-3.5">Judul Halaman</th>
-                        <th className="px-6 py-3.5">URL Slug</th>
-                        <th className="px-6 py-3.5">Lingkup Profil</th>
-                        <th className="px-6 py-3.5">Tampilan Live</th>
-                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                        <th className="px-4 py-2.5">Judul Halaman</th>
+                        <th className="px-4 py-2.5">Slug</th>
+                        <th className="px-4 py-2.5">Profil</th>
+                        <th className="px-4 py-2.5">Link</th>
+                        <th className="px-4 py-2.5 text-right">Aksi</th>
                       </>
                     )}
                     {activeTab === 'twibbon' && (
                       <>
-                        <th className="px-6 py-3.5">Judul Kampanye</th>
-                        <th className="px-6 py-3.5">URL Slug</th>
-                        <th className="px-6 py-3.5">Frame URL</th>
-                        <th className="px-6 py-3.5">Tampilan Live</th>
-                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                        <th className="px-4 py-2.5">Judul Kampanye</th>
+                        <th className="px-4 py-2.5">Slug</th>
+                        <th className="px-4 py-2.5">Frame URL</th>
+                        <th className="px-4 py-2.5">Link</th>
+                        <th className="px-4 py-2.5 text-right">Aksi</th>
                       </>
                     )}
                     {activeTab === 'fakultas' && (
                       <>
-                        <th className="px-6 py-3.5">Nama Lembaga</th>
-                        <th className="px-6 py-3.5">Helpdesk WA</th>
-                        <th className="px-6 py-3.5">Instagram</th>
-                        <th className="px-6 py-3.5">Group WA</th>
-                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                        <th className="px-4 py-2.5">Nama Lembaga</th>
+                        <th className="px-4 py-2.5">Helpdesk WA</th>
+                        <th className="px-4 py-2.5">Instagram</th>
+                        <th className="px-4 py-2.5">Group WA</th>
+                        <th className="px-4 py-2.5 text-right">Aksi</th>
                       </>
                     )}
                     {activeTab === 'prodi' && (
                       <>
-                        <th className="px-6 py-3.5">Nama Program Studi</th>
-                        <th className="px-6 py-3.5">Akreditasi</th>
-                        <th className="px-6 py-3.5">Instagram</th>
-                        <th className="px-6 py-3.5">Website</th>
-                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                        <th className="px-4 py-2.5">Nama Program Studi</th>
+                        <th className="px-4 py-2.5 w-24">Akreditasi</th>
+                        <th className="px-4 py-2.5">Instagram</th>
+                        <th className="px-4 py-2.5">Website</th>
+                        <th className="px-4 py-2.5 text-right">Aksi</th>
                       </>
                     )}
                     {activeTab === 'hmj' && (
                       <>
-                        <th className="px-6 py-3.5">Nama Organisasi (HMJ)</th>
-                        <th className="px-6 py-3.5">Ketua / CP</th>
-                        <th className="px-6 py-3.5">No WhatsApp</th>
-                        <th className="px-6 py-3.5">Form / Group WA</th>
-                        <th className="px-6 py-3.5 text-right">Aksi</th>
+                        <th className="px-4 py-2.5">Nama Organisasi (HMJ)</th>
+                        <th className="px-4 py-2.5">Ketua / CP</th>
+                        <th className="px-4 py-2.5">WhatsApp</th>
+                        <th className="px-4 py-2.5">Group WA</th>
+                        <th className="px-4 py-2.5 text-right">Aksi</th>
                       </>
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
+                <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
                   {/* Links rows */}
                   {activeTab === 'links' && filteredItems.map((lnk, idx) => (
-                    <tr key={lnk.id} className="hover:bg-slate-50/50 transition-all">
-                      <td className="px-6 py-4 font-mono text-slate-400">{lnk.sort_order || idx + 1}</td>
-                      <td className="px-6 py-4">
-                        <div className="font-semibold text-slate-900">{lnk.title}</div>
-                        <a href={lnk.url} target="_blank" className="text-[10px] text-slate-400 hover:text-rose-500 flex items-center gap-1 mt-1 truncate max-w-xs">
-                          {lnk.url} <ExternalLink className="h-2.5 w-2.5" />
-                        </a>
+                    <tr key={lnk.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-4 py-2 font-mono text-slate-400 text-xs">{lnk.sort_order || idx + 1}</td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-800 text-xs">{lnk.title}</span>
+                          <a href={lnk.url} target="_blank" rel="noreferrer" title={lnk.url} className="text-slate-400 hover:text-slate-900 transition-colors shrink-0">
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-semibold text-[10px]">
+                      <td className="px-4 py-2">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold text-[9px] border border-slate-200/40">
                           {lnk.category}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-500 max-w-xs truncate">{lnk.description || '-'}</td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <button onClick={() => openEditDialog(lnk)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                      <td className="px-4 py-2 text-slate-500 max-w-xs truncate text-[11px]">{lnk.description || '-'}</td>
+                      <td className="px-4 py-2 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(lnk)} className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-all">
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => handleDelete(lnk.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                        <button onClick={() => handleDelete(lnk.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -1301,47 +1356,47 @@ export default function App() {
 
                   {/* Fakultas rows */}
                   {activeTab === 'fakultas' && filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-all">
-                      <td className="px-6 py-4 font-semibold text-slate-900">
-                        <div className="flex items-center gap-3">
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-2">
                           {item.photo && (
-                            <img src={item.photo} alt={item.name} className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0" />
+                            <img src={item.photo} alt={item.name} className="w-6 h-6 rounded object-cover border border-slate-200 shrink-0" />
                           )}
                           <div className="min-w-0">
-                            <div className="truncate font-semibold text-slate-900">{item.name}</div>
+                            <div className="truncate font-semibold text-slate-800 text-xs">{item.name}</div>
                             {item.description && (
                               <div className="text-[10px] text-slate-400 font-normal max-w-xs truncate">{item.description}</div>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2">
                         {item.whatsapp ? (
-                          <div>
-                            <span className="font-medium text-slate-800">{item.whatsapp}</span>
-                            <span className="text-[10px] text-slate-400 block">{item.whatsapp_label || 'CS'}</span>
+                          <div className="text-[11px]">
+                            <span className="font-semibold text-slate-700">{item.whatsapp}</span>
+                            <span className="text-[9px] text-slate-400 block">{item.whatsapp_label || 'CS'}</span>
                           </div>
                         ) : '-'}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2 text-[11px]">
                         {item.instagram ? (
-                          <a href={item.instagram} target="_blank" className="text-rose-500 hover:underline truncate max-w-[120px] block">
+                          <a href={item.instagram} target="_blank" rel="noreferrer" className="text-slate-500 hover:underline hover:text-slate-900">
                             @{item.instagram.split('/').filter(Boolean).pop()}
                           </a>
                         ) : '-'}
                       </td>
-                      <td className="px-6 py-4 max-w-xs truncate">
+                      <td className="px-4 py-2 max-w-xs truncate text-[11px]">
                         {item.group_wa ? (
-                          <a href={item.group_wa} target="_blank" className="text-emerald-600 hover:underline truncate block">
+                          <a href={item.group_wa} target="_blank" rel="noreferrer" className="text-emerald-600 font-semibold hover:underline">
                             Gabung WAG
                           </a>
                         ) : '-'}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                      <td className="px-4 py-2 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-all">
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                        <button onClick={() => handleDelete(item.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -1350,34 +1405,34 @@ export default function App() {
 
                   {/* Prodi rows */}
                   {activeTab === 'prodi' && filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-all">
-                      <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
-                      <td className="px-6 py-4">
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.name}</td>
+                      <td className="px-4 py-2">
                         {item.status ? (
-                          <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-100 text-[10px]">
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-100 text-[9px]">
                             {item.status}
                           </span>
                         ) : '-'}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2 text-[11px]">
                         {item.instagram ? (
-                          <a href={item.instagram} target="_blank" className="text-rose-500 hover:underline">
+                          <a href={item.instagram} target="_blank" rel="noreferrer" className="text-slate-500 hover:underline hover:text-slate-900">
                             @{item.instagram.split('/').filter(Boolean).pop()}
                           </a>
                         ) : '-'}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2 text-[11px]">
                         {item.web ? (
-                          <a href={item.web} target="_blank" className="text-slate-400 hover:text-rose-500 flex items-center gap-1">
-                            Buka Situs <ExternalLink className="h-2.5 w-2.5" />
+                          <a href={item.web} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-slate-900 flex items-center gap-0.5">
+                            Buka <ExternalLink className="h-2.5 w-2.5" />
                           </a>
                         ) : '-'}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                      <td className="px-4 py-2 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-all">
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                        <button onClick={() => handleDelete(item.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -1386,22 +1441,22 @@ export default function App() {
 
                   {/* HMJ rows */}
                   {activeTab === 'hmj' && filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-all">
-                      <td className="px-6 py-4 font-semibold text-slate-900">{item.name}</td>
-                      <td className="px-6 py-4 font-medium text-slate-800">{item.contact_person || '-'}</td>
-                      <td className="px-6 py-4 font-mono text-slate-600">{item.whatsapp || '-'}</td>
-                      <td className="px-6 py-4 max-w-xs truncate">
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.name}</td>
+                      <td className="px-4 py-2 text-slate-700 text-[11px]">{item.contact_person || '-'}</td>
+                      <td className="px-4 py-2 font-mono text-slate-500 text-[11px]">{item.whatsapp || '-'}</td>
+                      <td className="px-4 py-2 max-w-xs truncate text-[11px]">
                         {item.group_link ? (
-                          <a href={item.group_link} target="_blank" className="text-rose-500 hover:underline block truncate">
-                            Formulir/Grup WAG
+                          <a href={item.group_link} target="_blank" rel="noreferrer" className="text-slate-500 hover:underline hover:text-slate-900 block truncate">
+                            Gabung WAG
                           </a>
                         ) : '-'}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                      <td className="px-4 py-2 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-all">
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                        <button onClick={() => handleDelete(item.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -1410,27 +1465,27 @@ export default function App() {
 
                   {/* Profiles rows */}
                   {activeTab === 'profiles' && filteredItems.map((item) => (
-                    <tr key={item.key} className="hover:bg-slate-50/50 transition-all">
-                      <td className="px-6 py-4 font-mono font-bold text-slate-900">{item.key}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                    <tr key={item.key} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-4 py-2 font-mono font-bold text-slate-900 text-xs">{item.key}</td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center gap-2">
                           {item.photo && (
-                            <img src={item.photo} alt={item.title} className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0" />
+                            <img src={item.photo} alt={item.title} className="w-6 h-6 rounded object-cover border border-slate-200 shrink-0" />
                           )}
-                          <div className="font-semibold text-slate-900">{item.title}</div>
+                          <div className="font-semibold text-slate-800 text-xs">{item.title}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-500 max-w-xs truncate">{item.bio || '-'}</td>
-                      <td className="px-6 py-4">
-                        <a href={`/${item.key}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
-                          Lihat Halaman <ExternalLink className="h-2.5 w-2.5" />
+                      <td className="px-4 py-2 text-slate-500 max-w-xs truncate text-[11px]">{item.bio || '-'}</td>
+                      <td className="px-4 py-2 text-[11px]">
+                        <a href={`/${item.key}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:underline hover:text-slate-900 flex items-center gap-0.5">
+                          Buka <ExternalLink className="h-2.5 w-2.5" />
                         </a>
                       </td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                      <td className="px-4 py-2 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-all">
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => handleDelete(item.key)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                        <button onClick={() => handleDelete(item.key)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -1439,20 +1494,20 @@ export default function App() {
 
                   {/* Static Pages rows */}
                   {activeTab === 'static_pages' && filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-all">
-                      <td className="px-6 py-4 font-semibold text-slate-900">{item.title}</td>
-                      <td className="px-6 py-4 font-mono text-slate-500">{item.slug}</td>
-                      <td className="px-6 py-4 font-mono font-bold text-slate-700">{item.profile_key}</td>
-                      <td className="px-6 py-4">
-                        <a href={item.profile_key === 'fsh' ? `/${item.slug}` : `/${item.profile_key}/${item.slug}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
-                          Buka Halaman <ExternalLink className="h-2.5 w-2.5" />
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.title}</td>
+                      <td className="px-4 py-2 font-mono text-slate-500 text-[11px]">{item.slug}</td>
+                      <td className="px-4 py-2 font-mono font-bold text-slate-500 text-[11px]">{item.profile_key}</td>
+                      <td className="px-4 py-2 text-[11px]">
+                        <a href={item.profile_key === 'fsh' ? `/${item.slug}` : `/${item.profile_key}/${item.slug}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:underline hover:text-slate-900 flex items-center gap-0.5">
+                          Buka <ExternalLink className="h-2.5 w-2.5" />
                         </a>
                       </td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                      <td className="px-4 py-2 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-all">
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                        <button onClick={() => handleDelete(item.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -1461,20 +1516,20 @@ export default function App() {
 
                   {/* Twibbon campaigns rows */}
                   {activeTab === 'twibbon' && filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-all">
-                      <td className="px-6 py-4 font-semibold text-slate-900">{item.title}</td>
-                      <td className="px-6 py-4 font-mono text-slate-500">{item.slug}</td>
-                      <td className="px-6 py-4 font-mono text-slate-400 max-w-xs truncate">{item.frame_url}</td>
-                      <td className="px-6 py-4">
-                        <a href={`/twibbon/${item.slug}`} target="_blank" className="text-rose-500 hover:underline flex items-center gap-1">
-                          Buka Halaman <ExternalLink className="h-2.5 w-2.5" />
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.title}</td>
+                      <td className="px-4 py-2 font-mono text-slate-500 text-[11px]">{item.slug}</td>
+                      <td className="px-4 py-2 font-mono text-slate-400 max-w-xs truncate text-[11px]">{item.frame_url}</td>
+                      <td className="px-4 py-2 text-[11px]">
+                        <a href={`/twibbon/${item.slug}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:underline hover:text-slate-900 flex items-center gap-0.5">
+                          Buka <ExternalLink className="h-2.5 w-2.5" />
                         </a>
                       </td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                        <button onClick={() => openEditDialog(item)} className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded-lg cursor-pointer transition-all">
+                      <td className="px-4 py-2 text-right space-x-1 whitespace-nowrap">
+                        <button onClick={() => openEditDialog(item)} className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-all">
                           <Edit2 className="h-3.5 w-3.5" />
                         </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-all">
+                        <button onClick={() => handleDelete(item.id)} className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-all">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </td>
@@ -2162,18 +2217,18 @@ export default function App() {
                 </>
               )}
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsDialogOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold cursor-pointer hover:bg-slate-50 transition-all"
+                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold cursor-pointer hover:bg-slate-50 active:scale-[0.98] transition-all"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={dataLoading}
-                  className="px-5 py-2 bg-[#E0004D] hover:bg-[#c20042] text-white font-semibold rounded-lg text-xs cursor-pointer shadow-md shadow-rose-500/5 hover:shadow-rose-500/10 transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-xs cursor-pointer shadow-sm hover:shadow transition-all flex items-center gap-1.5 disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.98]"
                 >
                   {dataLoading && <Loader2 className="h-3 w-3 animate-spin" />}
                   Simpan Perubahan
