@@ -74,6 +74,11 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dataLoading, setDataLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, selectedProfile, searchQuery]);
 
   // Dialog (Modal) states
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -645,6 +650,9 @@ export default function App() {
   };
 
   const filteredItems = getFilteredItems();
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const paginatedItems = filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // ==========================================
   // RENDER LOGIN SCREEN
@@ -1256,7 +1264,8 @@ export default function App() {
                 Tidak ada data ditemukan. Silakan tambahkan data baru.
               </div>
             ) : (
-              <table className="w-full text-left border-collapse text-xs">
+              <>
+                <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-slate-200/80 bg-slate-50 text-slate-400 uppercase tracking-wider font-bold text-[9px]">
                     {activeTab === 'links' && (
@@ -1326,9 +1335,9 @@ export default function App() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
                   {/* Links rows */}
-                  {activeTab === 'links' && filteredItems.map((lnk, idx) => (
+                  {activeTab === 'links' && paginatedItems.map((lnk, idx) => (
                     <tr key={lnk.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 py-2 font-mono text-slate-400 text-xs">{lnk.sort_order || idx + 1}</td>
+                      <td className="px-4 py-2 font-mono text-slate-400 text-xs">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
                       <td className="px-4 py-2">
                         <div className="flex items-center gap-1.5">
                           <span className="font-semibold text-slate-800 text-xs">{lnk.title}</span>
@@ -1355,7 +1364,7 @@ export default function App() {
                   ))}
 
                   {/* Fakultas rows */}
-                  {activeTab === 'fakultas' && filteredItems.map((item) => (
+                  {activeTab === 'fakultas' && paginatedItems.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-2">
                         <div className="flex items-center gap-2">
@@ -1404,7 +1413,7 @@ export default function App() {
                   ))}
 
                   {/* Prodi rows */}
-                  {activeTab === 'prodi' && filteredItems.map((item) => (
+                  {activeTab === 'prodi' && paginatedItems.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.name}</td>
                       <td className="px-4 py-2">
@@ -1440,7 +1449,7 @@ export default function App() {
                   ))}
 
                   {/* HMJ rows */}
-                  {activeTab === 'hmj' && filteredItems.map((item) => (
+                  {activeTab === 'hmj' && paginatedItems.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.name}</td>
                       <td className="px-4 py-2 text-slate-700 text-[11px]">{item.contact_person || '-'}</td>
@@ -1464,7 +1473,7 @@ export default function App() {
                   ))}
 
                   {/* Profiles rows */}
-                  {activeTab === 'profiles' && filteredItems.map((item) => (
+                  {activeTab === 'profiles' && paginatedItems.map((item) => (
                     <tr key={item.key} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-2 font-mono font-bold text-slate-900 text-xs">{item.key}</td>
                       <td className="px-4 py-2">
@@ -1493,7 +1502,7 @@ export default function App() {
                   ))}
 
                   {/* Static Pages rows */}
-                  {activeTab === 'static_pages' && filteredItems.map((item) => (
+                  {activeTab === 'static_pages' && paginatedItems.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.title}</td>
                       <td className="px-4 py-2 font-mono text-slate-500 text-[11px]">{item.slug}</td>
@@ -1515,7 +1524,7 @@ export default function App() {
                   ))}
 
                   {/* Twibbon campaigns rows */}
-                  {activeTab === 'twibbon' && filteredItems.map((item) => (
+                  {activeTab === 'twibbon' && paginatedItems.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.title}</td>
                       <td className="px-4 py-2 font-mono text-slate-500 text-[11px]">{item.slug}</td>
@@ -1537,6 +1546,35 @@ export default function App() {
                   ))}
                 </tbody>
               </table>
+
+              {/* Pagination Footer */}
+              {totalPages > 1 && (
+                <div className="p-3 border-t border-slate-200/60 flex items-center justify-between bg-[#F8FAFC]/50 text-[11px] text-slate-500 shrink-0 font-medium select-none">
+                  <div>
+                    Menampilkan <span className="font-bold text-slate-800">{(currentPage - 1) * itemsPerPage + 1}</span> sampai <span className="font-bold text-slate-800">{Math.min(filteredItems.length, currentPage * itemsPerPage)}</span> dari <span className="font-bold text-slate-800">{filteredItems.length}</span> data
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className="text-[11px] font-bold text-slate-600 hover:text-slate-900 disabled:text-slate-350 disabled:cursor-not-allowed cursor-pointer transition-colors active:scale-[0.98]"
+                    >
+                      &larr; Previous
+                    </button>
+                    <span className="font-semibold text-slate-500">Halaman {currentPage} dari {totalPages}</span>
+                    <button
+                      type="button"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className="text-[11px] font-bold text-slate-600 hover:text-slate-900 disabled:text-slate-350 disabled:cursor-not-allowed cursor-pointer transition-colors active:scale-[0.98]"
+                    >
+                      Next &rarr;
+                    </button>
+                  </div>
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>
