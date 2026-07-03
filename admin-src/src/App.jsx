@@ -35,6 +35,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('links'); // 'links', 'profiles', 'static_pages', 'fakultas', 'prodi', 'hmj'
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(''); // Current profile key being managed
+  const [iframeKey, setIframeKey] = useState(0);
   const [staticPages, setStaticPages] = useState([]);
   const [twibbonCampaigns, setTwibbonCampaigns] = useState([]);
 
@@ -583,6 +584,7 @@ export default function App() {
 
       setIsDialogOpen(false);
       fetchData();
+      setIframeKey(k => k + 1);
     } catch (err) {
       showToast('error', 'Gagal menyimpan perubahan: ' + err.message);
     } finally {
@@ -613,6 +615,7 @@ export default function App() {
 
       showToast('success', 'Data berhasil dihapus.');
       fetchData();
+      setIframeKey(k => k + 1);
     } catch (err) {
       showToast('error', 'Gagal menghapus data: ' + err.message);
     } finally {
@@ -1459,140 +1462,25 @@ export default function App() {
 
       {/* Live Preview Panel (Visible on lg viewports and up) */}
       {selectedProfile && (
-        <aside className="hidden lg:flex w-[380px] bg-slate-100 border-l border-slate-200 flex-col p-8 items-center justify-start shrink-0 select-none overflow-y-auto h-screen sticky top-0">
-          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Live Preview</div>
+        <aside className="hidden lg:flex w-[380px] bg-slate-50 border-l border-slate-200 flex-col p-6 items-center justify-start shrink-0 h-screen sticky top-0">
+          <div className="w-full flex items-center justify-between mb-4">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Preview</span>
+            <button
+              onClick={() => setIframeKey(k => k + 1)}
+              className="text-xs flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg shadow-sm transition-all cursor-pointer font-medium"
+            >
+              <span>🔄</span> Refresh Preview
+            </button>
+          </div>
           
-          {/* Simulated Mobile Device Frame Mockup */}
-          <div className="w-[280px] h-[560px] rounded-[36px] border-[8px] border-slate-900 bg-white shadow-2xl relative flex flex-col overflow-hidden shrink-0 select-none">
-            {/* Phone Speaker Notch */}
-            <div className="absolute top-1 left-1/2 -translate-x-1/2 w-24 h-3.5 bg-slate-900 rounded-full z-20 flex items-center justify-center">
-              <div className="w-10 h-0.5 bg-slate-800 rounded-full"></div>
-            </div>
-            
-            {/* Mobile Viewport Content Area */}
-            <div className="flex-1 overflow-y-auto pt-5 flex flex-col" style={{ backgroundColor: profileBgColor || '#F5F5F5' }}>
-              
-              {/* Banner image */}
-              <div className="relative w-full h-20 bg-slate-200 overflow-hidden flex-shrink-0">
-                {profileUrlBanner ? (
-                  <img src={profileUrlBanner} alt="Banner" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-tr from-rose-500/15 to-indigo-500/15"></div>
-                )}
-                
-                {/* Photo/Avatar overlay */}
-                <div className="absolute -bottom-5 left-3">
-                  <div className="w-10 h-10 rounded-full border border-white overflow-hidden bg-white shadow-sm flex items-center justify-center">
-                    <img 
-                      src={profilePhoto || 'https://ik.imagekit.io/liveatfsh/logo_uin.webp?updatedAt=1748865112640'} 
-                      alt="Logo" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Profile Header Title & Bio */}
-              <div className="px-3 pt-6 pb-2 flex-shrink-0">
-                {(() => {
-                  const prodiInfo = dirProdi.find(p => p.link.includes(selectedProfile));
-                  const showAcc = prodiInfo ? prodiInfo.status : null;
-                  return showAcc ? (
-                    <span className="inline-block bg-rose-500 text-white font-bold uppercase text-[7px] px-1 py-0.25 rounded tracking-wide mb-1 leading-none">
-                      {showAcc}
-                    </span>
-                  ) : null;
-                })()}
-                <h4 className="text-[10px] font-extrabold text-slate-800 tracking-tight leading-tight uppercase">
-                  {profileTitle || 'Judul Halaman'}
-                </h4>
-                <p className="text-[9px] text-slate-500 mt-1 leading-normal whitespace-pre-line">
-                  {profileBio || 'Deskripsi singkat halaman Anda...'}
-                </p>
-              </div>
-              
-              {/* Preview Links Accordion List */}
-              <div className="flex-1 px-3 py-1 space-y-2 overflow-y-auto">
-                {(() => {
-                  const previewGrouped = {};
-                  links.forEach(lnk => {
-                    const cat = lnk.category || 'Umum';
-                    if (!previewGrouped[cat]) {
-                      previewGrouped[cat] = [];
-                    }
-                    previewGrouped[cat].push(lnk);
-                  });
-
-                  const categories = Object.keys(previewGrouped);
-                  if (categories.length === 0) {
-                    return (
-                      <div className="text-center py-8 text-[8px] text-slate-400">
-                        Belum ada link terdaftar.
-                      </div>
-                    );
-                  }
-
-                  return categories.map((cat, idx) => {
-                    const catLinks = previewGrouped[cat];
-                    return (
-                      <div key={cat} className="bg-white rounded-lg border border-slate-100 overflow-hidden shadow-sm">
-                        {/* Category Header */}
-                        <div className="px-2 py-1 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[8px] font-bold text-slate-700 uppercase tracking-wider">
-                          <span>{cat}</span>
-                          <span className="text-slate-400 text-[6px]">{idx === 0 ? '▲' : '▼'}</span>
-                        </div>
-                        
-                        {/* Links inside Category */}
-                        {idx === 0 && (
-                          <div className="p-1 space-y-1 bg-white">
-                            {catLinks.map(lnk => {
-                              const text = (lnk.title + " " + (lnk.category || "")).toLowerCase();
-                              let previewIcon = "🔗";
-                              if (text.includes("whatsapp") || text.includes("helpdesk") || text.includes("group") || text.includes("grup")) previewIcon = "💬";
-                              else if (text.includes("instagram") || text.includes("ig")) previewIcon = "📸";
-                              else if (text.includes("web") || text.includes("website") || text.includes("online")) previewIcon = "🌐";
-                              else if (text.includes("email") || text.includes("surat") || text.includes("persuratan")) previewIcon = "✉️";
-                              else if (text.includes("beasiswa") || text.includes("scholarship") || text.includes("ziswa")) previewIcon = "🎓";
-                              else if (text.includes("magang") || text.includes("praktikum") || text.includes("laboratorium") || text.includes("lab")) previewIcon = "💼";
-
-                              return (
-                                <div key={lnk.id} className="p-1.5 bg-slate-50 hover:bg-slate-100 rounded-md border border-slate-100 flex items-center justify-between transition-all">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="text-[8px] font-semibold text-slate-800 truncate leading-tight">{lnk.title}</div>
-                                    {lnk.description && (
-                                      <div className="text-[7px] text-slate-400 truncate leading-none mt-0.5">{lnk.description}</div>
-                                    )}
-                                  </div>
-                                  <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-slate-500 shrink-0 ml-1.5 border border-slate-100 text-[8px]">
-                                    {previewIcon}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-              
-              {/* Footer Socials */}
-              <div className="px-3 py-2 border-t border-slate-100 bg-white/90 backdrop-blur-sm flex justify-center gap-2 mt-auto shrink-0">
-                {profileSocialWeb && (
-                  <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-[8px]">🌐</div>
-                )}
-                {profileSocialInstagram && (
-                  <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-[8px]">📸</div>
-                )}
-                {profileSocialFacebook && (
-                  <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-[8px]">📘</div>
-                )}
-                {profileSocialEmail && (
-                  <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-[8px]">✉️</div>
-                )}
-              </div>
-            </div>
+          {/* Iframe Viewport Wrapper */}
+          <div className="w-full max-w-[340px] flex-1 min-h-0 bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden flex flex-col relative">
+            <iframe
+              key={iframeKey}
+              src={selectedProfile === 'fsh' ? `/?key=${iframeKey}` : `/${selectedProfile}/?key=${iframeKey}`}
+              className="w-full h-full border-none"
+              title="Live Linktree Preview"
+            />
           </div>
         </aside>
       )}

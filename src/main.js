@@ -91,6 +91,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (localEdits.profiles[key].bio) {
               DATA.profiles[key].bio = localEdits.profiles[key].bio;
             }
+            if (localEdits.profiles[key].photo) {
+              DATA.profiles[key].photo = localEdits.profiles[key].photo;
+            }
+            if (localEdits.profiles[key].bg_color) {
+              DATA.profiles[key].bg_color = localEdits.profiles[key].bg_color;
+            }
+            if (localEdits.profiles[key].url_banner) {
+              DATA.profiles[key].url_banner = localEdits.profiles[key].url_banner;
+            }
+            if (localEdits.profiles[key].socials) {
+              DATA.profiles[key].socials = localEdits.profiles[key].socials;
+            }
           }
         });
       }
@@ -106,7 +118,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       localData.profiles[key] = {
         title: DATA.profiles[key].title,
         bio: DATA.profiles[key].bio,
-        links: DATA.profiles[key].links
+        links: DATA.profiles[key].links,
+        photo: DATA.profiles[key].photo,
+        bg_color: DATA.profiles[key].bg_color,
+        url_banner: DATA.profiles[key].url_banner,
+        socials: DATA.profiles[key].socials
       };
     });
     localStorage.setItem("fsh_linktree_edits", JSON.stringify(localData));
@@ -169,10 +185,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       dbLinks.forEach(lnk => {
         if (DATA.profiles[lnk.profile_key]) {
           DATA.profiles[lnk.profile_key].links.push({
+            id: lnk.id,
             title: lnk.title,
             url: lnk.url,
             category: lnk.category,
-            description: lnk.description || ""
+            description: lnk.description || "",
+            sort_order: lnk.sort_order
           });
         }
       });
@@ -1356,6 +1374,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (validatedUser) {
       sessionStorage.setItem("fsh_user", validatedUser);
+      sessionStorage.setItem("fsh_user_pass", passField);
       renderAdminDashboard(validatedUser);
     } else {
       errorEl.style.display = "block";
@@ -1399,24 +1418,80 @@ document.addEventListener("DOMContentLoaded", async () => {
             </div>
           ` : ''}
 
-          <!-- Live link editor form container -->
-          <div id="crud-editor-form-wrapper" style="display: none;"></div>
-
-          <!-- Links Listing Table Card -->
-          <div class="crud-list-card">
-            <div class="crud-list-header">
-              <h4>Daftar Tautan Aktif</h4>
-              <button class="btn-add-item" id="btn-trigger-add">+ Tambah Baru</button>
-            </div>
-            <div id="crud-links-list-container"></div>
+          <!-- Admin Mobile Tabs -->
+          <div class="admin-tabs" style="display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;">
+            <button class="admin-tab-btn active" data-tab="links" style="flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; background: var(--halodoc-red); color: white;">Tautan</button>
+            <button class="admin-tab-btn" data-tab="static" style="flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-muted);">Halaman Statis</button>
+            <button class="admin-tab-btn" data-tab="profile" style="flex: 1; padding: 10px; border: none; border-radius: 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-muted);">Tampilan & Info</button>
           </div>
+
+          <!-- Tab Content 1: Tautan -->
+          <div id="admin-pane-links" class="admin-tab-pane">
+            <div id="crud-editor-form-wrapper" style="display: none;"></div>
+            <div class="crud-list-card">
+              <div class="crud-list-header">
+                <h4>Daftar Tautan Aktif</h4>
+                <button class="btn-add-item" id="btn-trigger-add">+ Tambah Baru</button>
+              </div>
+              <div id="crud-links-list-container"></div>
+            </div>
+          </div>
+
+          <!-- Tab Content 2: Halaman Statis -->
+          <div id="admin-pane-static" class="admin-tab-pane" style="display: none;">
+            <div id="static-editor-form-wrapper" style="display: none;"></div>
+            <div class="crud-list-card">
+              <div class="crud-list-header">
+                <h4>Halaman Statis Custom</h4>
+                <button class="btn-add-item" id="btn-trigger-add-static" style="background-color: var(--halodoc-red); border: none; color: white; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; cursor: pointer;">+ Tambah Baru</button>
+              </div>
+              <div id="crud-static-list-container"></div>
+            </div>
+          </div>
+
+          <!-- Tab Content 3: Tampilan & Informasi -->
+          <div id="admin-pane-profile" class="admin-tab-pane" style="display: none;">
+            <div class="crud-list-card" style="padding: 16px;">
+              <h4 style="margin-bottom: 16px;">Pengaturan Tampilan & Informasi</h4>
+              <div id="profile-editor-form-wrapper"></div>
+            </div>
+          </div>
+
         </div>
       </div>
     `;
 
+    // Mobile tab switching logic
+    const tabButtons = document.querySelectorAll(".admin-tab-btn");
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach(b => {
+          b.classList.remove("active");
+          b.style.background = "transparent";
+          b.style.color = "var(--text-muted)";
+        });
+        btn.classList.add("active");
+        btn.style.background = "var(--halodoc-red)";
+        btn.style.color = "white";
+
+        const tabTarget = btn.getAttribute("data-tab");
+        document.querySelectorAll(".admin-tab-pane").forEach(pane => {
+          pane.style.display = "none";
+        });
+        document.getElementById(`admin-pane-${tabTarget}`).style.display = "block";
+
+        if (tabTarget === "static") {
+          renderAdminStaticList(currentSelectedProfile);
+        } else if (tabTarget === "profile") {
+          renderAdminProfileForm(currentSelectedProfile);
+        }
+      });
+    });
+
     // Logout trigger
     document.getElementById("btn-admin-logout").addEventListener("click", () => {
       sessionStorage.removeItem("fsh_user");
+      sessionStorage.removeItem("fsh_user_pass");
       activeProfile = null;
       switchTab("info");
     });
@@ -1427,7 +1502,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       selectEl.addEventListener("change", (e) => {
         currentSelectedProfile = e.target.value;
         renderAdminLinksList(currentSelectedProfile);
+        renderAdminStaticList(currentSelectedProfile);
+        renderAdminProfileForm(currentSelectedProfile);
         hideEditorForm();
+        hideStaticEditorForm();
       });
     }
 
@@ -1436,8 +1514,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderLinkEditorForm(currentSelectedProfile);
     });
 
+    // Trigger adding new static page
+    document.getElementById("btn-trigger-add-static").addEventListener("click", () => {
+      renderStaticEditorForm(currentSelectedProfile);
+    });
+
     // Render lists immediately
     renderAdminLinksList(currentSelectedProfile);
+    renderAdminStaticList(currentSelectedProfile);
+    renderAdminProfileForm(currentSelectedProfile);
   }
 
   function hideEditorForm() {
@@ -1508,7 +1593,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  function handleSaveLink(profileKey, linkIndexToEdit = null) {
+  async function executeSecureWriteClient(tableName, actionType, payload, id = null) {
+    const username = sessionStorage.getItem("fsh_user");
+    const password = sessionStorage.getItem("fsh_user_pass") || "";
+    if (!username) {
+      throw new Error("Sesi kedaluwarsa. Harap login kembali.");
+    }
+    
+    const headers = {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json"
+    };
+    
+    const body = {
+      op_username: username,
+      op_password: password,
+      target_table: tableName,
+      action_type: actionType,
+      row_data: payload,
+      row_id: id ? String(id) : null
+    };
+    
+    const res = await fetch(`${SUPABASE_URL}/rpc/execute_secure_write`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body)
+    });
+    
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || "Gagal menyimpan perubahan ke database.");
+    }
+    
+    const data = await res.json();
+    return data;
+  }
+
+  async function handleSaveLink(profileKey, linkIndexToEdit = null) {
     const title = document.getElementById("form-link-title").value.trim();
     const url = document.getElementById("form-link-url").value.trim();
     const category = document.getElementById("form-link-category").value.trim();
@@ -1519,25 +1641,47 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const newLinkItem = { title, url, category, description };
+    const links = DATA.profiles[profileKey].links;
+    const payload = {
+      profile_key: profileKey,
+      title,
+      url,
+      category,
+      description
+    };
 
-    if (linkIndexToEdit !== null) {
-      // Edit
-      DATA.profiles[profileKey].links[linkIndexToEdit] = newLinkItem;
-    } else {
-      // Add
-      DATA.profiles[profileKey].links.push(newLinkItem);
+    try {
+      if (linkIndexToEdit !== null) {
+        const linkItem = links[linkIndexToEdit];
+        await executeSecureWriteClient('links', 'update', payload, linkItem.id);
+        linkItem.title = title;
+        linkItem.url = url;
+        linkItem.category = category;
+        linkItem.description = description;
+        alert("Tautan berhasil diperbarui!");
+      } else {
+        payload.sort_order = links.length + 1;
+        const result = await executeSecureWriteClient('links', 'insert', payload);
+        links.push({
+          id: result && result[0] ? result[0].id : null,
+          title,
+          url,
+          category,
+          description,
+          sort_order: payload.sort_order
+        });
+        alert("Tautan berhasil ditambahkan!");
+      }
+      hideEditorForm();
+      renderAdminLinksList(profileKey);
+    } catch (err) {
+      alert("Gagal menyimpan tautan: " + err.message);
     }
-
-    // Save and sync
-    saveEditsToLocal();
-    hideEditorForm();
-    renderAdminLinksList(profileKey);
   }
 
-  // Render list of active links in the admin view
   function renderAdminLinksList(profileKey) {
     const container = document.getElementById("crud-links-list-container");
+    if (!container) return;
     container.innerHTML = "";
 
     const links = DATA.profiles[profileKey].links;
@@ -1561,7 +1705,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     });
 
-    // Bind Edit triggers
     document.querySelectorAll(".btn-edit-lnk").forEach(btn => {
       btn.addEventListener("click", () => {
         const idx = parseInt(btn.getAttribute("data-idx"));
@@ -1569,17 +1712,278 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
 
-    // Bind Delete triggers
     document.querySelectorAll(".btn-delete-lnk").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const idx = parseInt(btn.getAttribute("data-idx"));
-        if (confirm(`Apakah Anda yakin ingin menghapus tautan "${links[idx].title}"?`)) {
-          links.splice(idx, 1);
-          saveEditsToLocal();
-          renderAdminLinksList(profileKey);
-          hideEditorForm();
+        const linkItem = links[idx];
+        if (confirm(`Apakah Anda yakin ingin menghapus tautan "${linkItem.title}"?`)) {
+          try {
+            await executeSecureWriteClient('links', 'delete', null, linkItem.id);
+            links.splice(idx, 1);
+            alert("Tautan berhasil dihapus!");
+            renderAdminLinksList(profileKey);
+            hideEditorForm();
+          } catch (err) {
+            alert("Gagal menghapus tautan: " + err.message);
+          }
         }
       });
+    });
+  }
+
+  // --- Mobile Static Pages Handlers ---
+  let cachedStaticPages = [];
+
+  async function fetchProfileStaticPages(profileKey) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return [];
+    try {
+      const headers = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      };
+      const isFakultasAdmin = (sessionStorage.getItem("fsh_user") === "admin.tufsh");
+      const url = isFakultasAdmin 
+        ? `${SUPABASE_URL}/rest/v1/static_pages?select=*&order=created_at.desc`
+        : `${SUPABASE_URL}/rest/v1/static_pages?profile_key=eq.${profileKey}&select=*&order=created_at.desc`;
+        
+      const res = await fetch(url, { headers });
+      if (res.ok) {
+        cachedStaticPages = await res.json();
+        return cachedStaticPages;
+      }
+    } catch (e) {
+      console.error("Gagal mengambil data halaman statis", e);
+    }
+    return [];
+  }
+
+  function hideStaticEditorForm() {
+    const wrapper = document.getElementById("static-editor-form-wrapper");
+    if (wrapper) {
+      wrapper.innerHTML = "";
+      wrapper.style.display = "none";
+    }
+  }
+
+  async function renderAdminStaticList(profileKey) {
+    const container = document.getElementById("crud-static-list-container");
+    if (!container) return;
+    container.innerHTML = `<div style="text-align:center; padding:20px; font-size:0.8rem; color:var(--text-muted);">Memuat data halaman...</div>`;
+    
+    const pages = await fetchProfileStaticPages(profileKey);
+    container.innerHTML = "";
+    
+    if (pages.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding: 20px; font-size: 0.8rem; color: var(--text-muted);">Belum ada halaman statis custom.</div>`;
+      return;
+    }
+    
+    pages.forEach((page, idx) => {
+      container.innerHTML += `
+        <div class="crud-item-row" style="padding: 12px 16px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+          <div class="crud-item-info">
+            <span class="crud-item-title" style="font-weight: 600; font-size: 0.8rem; display: block;">${escapeHtml(page.title)}</span>
+            <span class="crud-item-desc" style="font-size: 0.7rem; color: var(--text-muted);">Slug: /page/${escapeHtml(page.slug)}</span>
+          </div>
+          <div class="crud-item-actions" style="display: flex; gap: 8px;">
+            <button class="crud-action-icon-btn edit btn-edit-static" data-idx="${idx}">${ICONS.edit}</button>
+            <button class="crud-action-icon-btn delete btn-delete-static" data-idx="${idx}">${ICONS.trash}</button>
+          </div>
+        </div>
+      `;
+    });
+    
+    document.querySelectorAll(".btn-edit-static").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-idx"));
+        renderStaticEditorForm(profileKey, pages[idx]);
+      });
+    });
+    
+    document.querySelectorAll(".btn-delete-static").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-idx"));
+        handleDeleteStaticPage(profileKey, pages[idx].id, pages[idx].title);
+      });
+    });
+  }
+
+  function renderStaticEditorForm(profileKey, pageToEdit = null) {
+    const wrapper = document.getElementById("static-editor-form-wrapper");
+    if (!wrapper) return;
+    wrapper.style.display = "block";
+    
+    let isEditing = (pageToEdit !== null);
+    let titleVal = isEditing ? pageToEdit.title : "";
+    let slugVal = isEditing ? pageToEdit.slug : "";
+    let contentVal = isEditing ? pageToEdit.content : "";
+    
+    wrapper.innerHTML = `
+      <div class="crud-form-card" style="padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-light); border-radius: 16px; background-color: var(--bg-white);">
+        <div class="crud-form-title" style="font-weight: 700; font-size: 0.9rem; margin-bottom: 12px;">${isEditing ? 'Edit Halaman Statis' : 'Tambah Halaman Statis Baru'}</div>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="form-static-title" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Judul Halaman *</label>
+          <input type="text" id="form-static-title" class="form-control" value="${escapeHtml(titleVal)}" placeholder="Contoh: Info Alur Pendaftaran">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="form-static-slug" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Slug URL *</label>
+          <input type="text" id="form-static-slug" class="form-control" value="${escapeHtml(slugVal)}" placeholder="Contoh: alur-krs" ${isEditing ? 'disabled style="background-color: var(--bg-slate); cursor: not-allowed;"' : ''}>
+          <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">Alamat url: <code>/page/&lt;slug&gt;</code></p>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="form-static-content" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Konten Halaman (HTML) *</label>
+          <textarea id="form-static-content" class="form-control" style="min-height: 120px; font-family: monospace; font-size: 0.75rem;" placeholder="Contoh: <p>Silakan ikuti petunjuk...</p>">${escapeHtml(contentVal)}</textarea>
+        </div>
+
+        <div class="crud-form-actions" style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+          <button class="btn-cancel" id="btn-static-cancel" style="padding: 8px 16px; font-size: 0.75rem; border-radius: 8px; cursor: pointer;">Batal</button>
+          <button class="btn-primary btn-save" id="btn-static-save" style="padding: 8px 16px; font-size: 0.75rem; border-radius: 8px; cursor: pointer; background-color: var(--halodoc-red); color: white; border: none;">Simpan Halaman</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("btn-static-cancel").addEventListener("click", hideStaticEditorForm);
+    document.getElementById("btn-static-save").addEventListener("click", () => {
+      handleSaveStaticPage(profileKey, pageToEdit);
+    });
+  }
+
+  async function handleSaveStaticPage(profileKey, pageToEdit = null) {
+    const title = document.getElementById("form-static-title").value.trim();
+    const slug = document.getElementById("form-static-slug").value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const content = document.getElementById("form-static-content").value.trim();
+
+    if (!title || !slug || !content) {
+      alert("Harap isi semua kolom wajib (*)!");
+      return;
+    }
+
+    const payload = {
+      title,
+      slug,
+      content,
+      profile_key: profileKey
+    };
+
+    try {
+      if (pageToEdit !== null) {
+        await executeSecureWriteClient('static_pages', 'update', payload, pageToEdit.id);
+        alert("Halaman statis berhasil diperbarui!");
+      } else {
+        await executeSecureWriteClient('static_pages', 'insert', payload);
+        alert("Halaman statis berhasil ditambahkan!");
+      }
+      hideStaticEditorForm();
+      renderAdminStaticList(profileKey);
+    } catch (err) {
+      alert("Gagal menyimpan halaman statis: " + err.message);
+    }
+  }
+
+  async function handleDeleteStaticPage(profileKey, pageId, pageTitle) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus halaman statis "${pageTitle}"?`)) {
+      return;
+    }
+    try {
+      await executeSecureWriteClient('static_pages', 'delete', null, pageId);
+      alert("Halaman statis berhasil dihapus!");
+      renderAdminStaticList(profileKey);
+      hideStaticEditorForm();
+    } catch (err) {
+      alert("Gagal menghapus halaman statis: " + err.message);
+    }
+  }
+
+  // --- Mobile Profile Edit Form ---
+  function renderAdminProfileForm(profileKey) {
+    const container = document.getElementById("profile-editor-form-wrapper");
+    if (!container) return;
+    const prof = DATA.profiles[profileKey];
+    if (!prof) {
+      container.innerHTML = "Profil tidak ditemukan.";
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-title" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Judul Halaman / Lembaga</label>
+        <input type="text" id="prof-title" class="form-control" value="${escapeHtml(prof.title || '')}">
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-bio" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Deskripsi / Bio</label>
+        <textarea id="prof-bio" class="form-control" style="min-height: 60px; font-size: 0.75rem;">${escapeHtml(prof.bio || '')}</textarea>
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-photo" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">URL Logo / Foto</label>
+        <input type="text" id="prof-photo" class="form-control" value="${escapeHtml(prof.photo || '')}">
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-banner" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">URL Gambar Banner</label>
+        <input type="text" id="prof-banner" class="form-control" value="${escapeHtml(prof.url_banner || '')}">
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-bgcolor" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Warna Latar Belakang (Hex)</label>
+        <input type="text" id="prof-bgcolor" class="form-control" value="${escapeHtml(prof.bg_color || '#F5F5F5')}">
+      </div>
+      
+      <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 16px; margin-bottom: 8px; border-top: 1px solid var(--border-light); padding-top: 12px;">Sosial Media & Kontak</div>
+      
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-web" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Website Resmi</label>
+        <input type="text" id="prof-web" class="form-control" value="${escapeHtml(prof.socials?.web || '')}">
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-instagram" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Instagram URL</label>
+        <input type="text" id="prof-instagram" class="form-control" value="${escapeHtml(prof.socials?.instagram || '')}">
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-facebook" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Facebook URL</label>
+        <input type="text" id="prof-facebook" class="form-control" value="${escapeHtml(prof.socials?.facebook || '')}">
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label for="prof-email" style="font-size: 0.7rem; font-weight: 600; display: block; margin-bottom: 4px;">Email Resmi</label>
+        <input type="text" id="prof-email" class="form-control" value="${escapeHtml(prof.socials?.email || '')}">
+      </div>
+      <button class="btn-primary btn-save" id="btn-save-profile" style="width: 100%; margin-top: 16px; padding: 12px; font-size: 0.75rem; border-radius: 8px; cursor: pointer; background-color: var(--halodoc-red); color: white; border: none; font-weight: 600;">Simpan Perubahan</button>
+    `;
+
+    document.getElementById("btn-save-profile").addEventListener("click", async () => {
+      const payload = {
+        key: profileKey,
+        title: document.getElementById("prof-title").value.trim(),
+        bio: document.getElementById("prof-bio").value.trim(),
+        photo: document.getElementById("prof-photo").value.trim(),
+        url_banner: document.getElementById("prof-banner").value.trim(),
+        bg_color: document.getElementById("prof-bgcolor").value.trim(),
+        social_facebook: document.getElementById("prof-facebook").value.trim(),
+        social_instagram: document.getElementById("prof-instagram").value.trim(),
+        social_web: document.getElementById("prof-web").value.trim(),
+        social_email: document.getElementById("prof-email").value.trim()
+      };
+
+      try {
+        await executeSecureWriteClient('profiles', 'update', payload, profileKey);
+        
+        prof.title = payload.title;
+        prof.bio = payload.bio;
+        prof.photo = payload.photo;
+        prof.url_banner = payload.url_banner;
+        prof.bg_color = payload.bg_color;
+        prof.socials = {
+          facebook: payload.social_facebook,
+          instagram: payload.social_instagram,
+          web: payload.social_web,
+          email: payload.social_email
+        };
+        
+        saveEditsToLocal();
+        alert("Pengaturan Tampilan berhasil diperbarui!");
+      } catch (err) {
+        alert("Gagal memperbarui profil: " + err.message);
+      }
     });
   }
 
