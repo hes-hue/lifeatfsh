@@ -1,0 +1,19 @@
+# ==========================================================
+# Apache Rewrite Rules for Single Page Application Routing
+# ==========================================================
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. If the requested path is a real file or folder, serve it directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 2. Redirect /twibbon and /twibbon/* to /index.html
+  RewriteRule ^twibbon(/.*)?$ /index.html [L]
+
+  # 3. Fallback for any other page routes to root index.html
+  RewriteRule ^(.*)$ /index.html [L]
+</IfModule>

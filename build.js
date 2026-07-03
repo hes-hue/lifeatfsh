@@ -36,26 +36,92 @@ function generateSubpageHtml(key, profile) {
 }
 
 // Main compiler loop
-console.log('🚀 FSH Static Builder starting...');
+async function run() {
+  console.log('🚀 FSH Static Builder starting...');
 
-Object.keys(DATA.profiles).forEach(key => {
-  // Skip the root 'fsh' folder generation (it is served directly by index.html in the root)
-  if (key === 'fsh') return;
+  // 1. Generate profiles
+  Object.keys(DATA.profiles).forEach(key => {
+    // Skip the root 'fsh' folder generation (it is served directly by index.html in the root)
+    if (key === 'fsh') return;
 
-  const profile = DATA.profiles[key];
-  const dirPath = path.join(__dirname, key);
+    const profile = DATA.profiles[key];
+    const dirPath = path.join(__dirname, key);
 
-  // Create directory if it doesn't exist
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-    console.log(`📁 Created folder: /${key}`);
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+      console.log(`📁 Created folder: /${key}`);
+    }
+
+    const fileContent = generateSubpageHtml(key, profile);
+    const filePath = path.join(dirPath, 'index.html');
+    
+    fs.writeFileSync(filePath, fileContent, 'utf8');
+    console.log(`📄 Generated subpage: /${key}/index.html`);
+  });
+
+  // 2. Generate Twibbon pages
+  console.log('🚀 Starting Twibbon static page compilation...');
+  const twibbonMainDir = path.join(__dirname, 'twibbon');
+  if (!fs.existsSync(twibbonMainDir)) {
+    fs.mkdirSync(twibbonMainDir, { recursive: true });
+    console.log('📁 Created folder: /twibbon');
   }
 
-  const fileContent = generateSubpageHtml(key, profile);
-  const filePath = path.join(dirPath, 'index.html');
-  
-  fs.writeFileSync(filePath, fileContent, 'utf8');
-  console.log(`📄 Generated subpage: /${key}/index.html`);
-});
+  // Generate main /twibbon/index.html
+  let twibbonHtml = templateHtml;
+  twibbonHtml = twibbonHtml.replace('href="src/styles.css?v=1.0.10"', 'href="/src/styles.css?v=1.0.10"');
+  twibbonHtml = twibbonHtml.replace('src="src/data.js?v=1.0.10"', 'src="/src/data.js?v=1.0.10"');
+  twibbonHtml = twibbonHtml.replace('src="src/main.js?v=1.0.10"', 'src="/src/main.js?v=1.0.10"');
 
-console.log('✅ FSH Static Builder completed successfully!');
+  const mainTitle = 'Galeri Twibbon Resmi - FSH UIN SGD';
+  const mainDesc = 'Pilih bingkai resmi Fakultas Syariah dan Hukum UIN Sunan Gunung Djati Bandung untuk memasang foto profil Anda secara gratis.';
+  twibbonHtml = twibbonHtml.replace(/Life at FSH - Fakultas Syariah & Hukum UIN SGD/g, mainTitle);
+  twibbonHtml = twibbonHtml.replace(/Portal Quicklink & Informasi Akademik Fakultas Syariah dan Hukum UIN Sunan Gunung Djati Bandung. Layanan satu pintu bagi mahasiswa, dosen, dan staf./g, mainDesc);
+
+  fs.writeFileSync(path.join(twibbonMainDir, 'index.html'), twibbonHtml, 'utf8');
+  console.log('📄 Generated: /twibbon/index.html');
+
+  // Fetch active campaigns from Supabase and pre-generate static pages
+  const SUPABASE_URL = "https://sjrztdksdxwrbjgqfkbr.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqcnp0ZGtzZHh3cmJqZ3Fma2JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MDE3NjgsImV4cCI6MjA5ODQ3Nzc2OH0.4pmQv_KNvMJ2CPa4V1Poz12SzuBc7iRBxMXfQG-mghY";
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/twibbon_campaigns?status=eq.active&select=*`, {
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+
+    if (res.ok) {
+      const campaigns = await res.json();
+      for (const c of campaigns) {
+        const campDir = path.join(twibbonMainDir, c.slug);
+        if (!fs.existsSync(campDir)) {
+          fs.mkdirSync(campDir, { recursive: true });
+          console.log(`📁 Created folder: /twibbon/${c.slug}`);
+        }
+
+        let campHtml = templateHtml;
+        campHtml = campHtml.replace('href="src/styles.css?v=1.0.10"', 'href="/src/styles.css?v=1.0.10"');
+        campHtml = campHtml.replace('src="src/data.js?v=1.0.10"', 'src="/src/data.js?v=1.0.10"');
+        campHtml = campHtml.replace('src="src/main.js?v=1.0.10"', 'src="/src/main.js?v=1.0.10"');
+
+        const campTitle = `${c.title} - Twibbon FSH UIN SGD`;
+        const campDesc = c.description ? `${c.description.substring(0, 150)}...` : 'Pasang bingkai foto profil resmi Anda secara online gratis.';
+        campHtml = campHtml.replace(/Life at FSH - Fakultas Syariah & Hukum UIN SGD/g, campTitle);
+        campHtml = campHtml.replace(/Portal Quicklink & Informasi Akademik Fakultas Syariah dan Hukum UIN Sunan Gunung Djati Bandung. Layanan satu pintu bagi mahasiswa, dosen, dan staf./g, campDesc);
+
+        fs.writeFileSync(path.join(campDir, 'index.html'), campHtml, 'utf8');
+        console.log(`📄 Generated: /twibbon/${c.slug}/index.html`);
+      }
+    }
+  } catch (err) {
+    console.error('⚠️ Warning: Failed to pre-render dynamic Twibbon campaign pages:', err.message);
+  }
+
+  console.log('✅ FSH Static Builder completed successfully!');
+}
+
+run();
