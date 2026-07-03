@@ -1993,7 +1993,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       loader.style.display = "flex";
     }
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/twibbon_campaigns?select=*&order=created_at.desc`, {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/twibbon_campaigns?status=eq.active&select=*&order=created_at.desc`, {
         headers: {
           "apikey": SUPABASE_ANON_KEY,
           "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
@@ -2066,7 +2066,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/twibbon_campaigns?slug=eq.${slug}&select=*`, {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/twibbon_campaigns?slug=eq.${slug}&status=eq.active&select=*`, {
         headers: {
           "apikey": SUPABASE_ANON_KEY,
           "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
@@ -2078,7 +2078,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (campaigns.length === 0) {
         appViewport.innerHTML = `
           <div style="text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 0.85rem;">
-            Kampanye tidak ditemukan.
+            Kampanye tidak ditemukan atau sedang tidak aktif.
           </div>
         `;
         return;
@@ -2098,7 +2098,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           <!-- Canvas Preview Area -->
           <div style="position: relative; width: 100%; max-width: 360px; margin: 0 auto 20px; aspect-ratio: 1; border: 1px solid var(--border-light); border-radius: 16px; overflow: hidden; background-color: #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center;">
-            <canvas id="twibbon-canvas" width="1080" height="1080" style="width: 100%; height: 100%; display: block; object-fit: contain; cursor: grab;"></canvas>
+            <canvas id="twibbon-canvas" style="width: 100%; height: 100%; display: block; object-fit: contain; cursor: grab;"></canvas>
             <div id="canvas-placeholder" style="position: absolute; text-align: center; pointer-events: none; color: var(--text-muted); font-size: 0.75rem; padding: 20px;">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 40px; height: 40px; margin: 0 auto 10px; color: var(--text-muted); opacity: 0.5;"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
               Klik tombol di bawah untuk memasukkan foto
@@ -2116,13 +2116,21 @@ document.addEventListener("DOMContentLoaded", async () => {
               <input type="range" id="zoom-slider" min="10" max="300" value="100" style="width: 100%; accent-color: var(--halodoc-red); height: 6px; border-radius: 3px; cursor: pointer;" />
             </div>
 
-            <!-- Rotation & Operations -->
-            <div style="display: flex; justify-content: space-between; gap: 12px;">
-              <button id="btn-rotate-left" style="flex: 1; padding: 8px; font-size: 0.75rem; font-weight: 600; background: var(--bg-slate); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                ↺ Putar Kiri
-              </button>
-              <button id="btn-rotate-right" style="flex: 1; padding: 8px; font-size: 0.75rem; font-weight: 600; background: var(--bg-slate); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                Putar Kanan ↻
+            <!-- Rotation, Mirror & Reset -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; gap: 8px;">
+                <button id="btn-rotate-left" style="flex: 1; padding: 8px; font-size: 0.75rem; font-weight: 600; background: var(--bg-slate); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  ↺ Kiri
+                </button>
+                <button id="btn-rotate-right" style="flex: 1; padding: 8px; font-size: 0.75rem; font-weight: 600; background: var(--bg-slate); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  Kanan ↻
+                </button>
+                <button id="btn-mirror" style="flex: 1; padding: 8px; font-size: 0.75rem; font-weight: 600; background: var(--bg-slate); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  ⇄ Cermin
+                </button>
+              </div>
+              <button id="btn-reset" style="width: 100%; padding: 8px; font-size: 0.75rem; font-weight: 600; background: var(--bg-slate); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                Reset Posisi Foto
               </button>
             </div>
           </div>
@@ -2140,6 +2148,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             <button id="btn-download" style="display: none; width: 100%; padding: 12px; background-color: #0c9e64; color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(12, 158, 100, 0.15);">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Unduh Twibbon
+            </button>
+
+            <!-- Share Campaign Button -->
+            <button id="btn-share-campaign" style="width: 100%; padding: 10px; background-color: transparent; border: 1px solid var(--border-light); color: var(--text-dark); border-radius: 12px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Bagikan Kampanye
             </button>
 
             <!-- Back Button -->
@@ -2167,20 +2181,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       const zoomValue = document.getElementById("zoom-value");
       const rotateLeft = document.getElementById("btn-rotate-left");
       const rotateRight = document.getElementById("btn-rotate-right");
+      const mirrorBtn = document.getElementById("btn-mirror");
+      const resetBtn = document.getElementById("btn-reset");
+      const shareCampaignBtn = document.getElementById("btn-share-campaign");
+
+      // Set canvas dimension based on frame
+      const frameWidth = campaign.frame_width || 1080;
+      const frameHeight = campaign.frame_height || 1080;
+      const longestDim = Math.max(frameWidth, frameHeight);
+
+      if (longestDim > 1080) {
+        const ratio = 1080 / longestDim;
+        canvas.width = frameWidth * ratio;
+        canvas.height = frameHeight * ratio;
+      } else {
+        canvas.width = frameWidth;
+        canvas.height = frameHeight;
+      }
 
       let userImg = null;
       let frameImg = new Image();
       frameImg.crossOrigin = "anonymous";
       frameImg.src = campaign.frame_url;
 
-      // Frame loaded listener
       frameImg.onload = () => {
         drawCanvas();
       };
 
-      // State variables for position/scale/rotation
+      // State variables
       let scale = 1.0;
-      let rotation = 0; // degrees (0, 90, 180, 270)
+      let rotation = 0;
+      let isMirrored = false;
       let offsetX = 0;
       let offsetY = 0;
 
@@ -2189,29 +2220,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       let startX = 0;
       let startY = 0;
 
+      // Pinch to Zoom states
+      let isPinching = false;
+      let initialPinchDist = 0;
+      let initialPinchScale = 1.0;
+
       function drawCanvas() {
-        // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw user image if available
         if (userImg) {
           ctx.save();
-          // Translate to center of canvas
+          // Translate to logical center + offset
           ctx.translate(canvas.width / 2 + offsetX, canvas.height / 2 + offsetY);
           // Rotate
           ctx.rotate((rotation * Math.PI) / 180);
+          // Mirror
+          if (isMirrored) {
+            ctx.scale(-1, 1);
+          }
           // Scale and draw
           const w = userImg.width * scale;
           const h = userImg.height * scale;
           ctx.drawImage(userImg, -w / 2, -h / 2, w, h);
           ctx.restore();
         } else {
-          // Fill background color for placeholder visualization
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
-        // Draw transparent PNG frame on top
         if (frameImg.complete) {
           ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
         }
@@ -2226,7 +2262,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         reader.onload = (event) => {
           userImg = new Image();
           userImg.onload = () => {
-            // Compute default scale to cover the canvas (1080x1080)
             const scaleX = canvas.width / userImg.width;
             const scaleY = canvas.height / userImg.height;
             scale = Math.max(scaleX, scaleY);
@@ -2236,6 +2271,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             offsetX = 0;
             offsetY = 0;
             rotation = 0;
+            isMirrored = false;
 
             placeholder.style.display = "none";
             controls.style.display = "flex";
@@ -2247,20 +2283,41 @@ document.addEventListener("DOMContentLoaded", async () => {
         reader.readAsDataURL(file);
       });
 
-      // Zoom listener
+      // Zoom slider
       zoomSlider.addEventListener("input", (e) => {
         scale = e.target.value / 100;
         zoomValue.innerText = `${e.target.value}%`;
         drawCanvas();
       });
 
-      // Rotate listener
+      // Rotation listeners
       rotateLeft.addEventListener("click", () => {
         rotation = (rotation - 90) % 360;
         drawCanvas();
       });
       rotateRight.addEventListener("click", () => {
         rotation = (rotation + 90) % 360;
+        drawCanvas();
+      });
+
+      // Mirror listener
+      mirrorBtn.addEventListener("click", () => {
+        isMirrored = !isMirrored;
+        drawCanvas();
+      });
+
+      // Reset listener
+      resetBtn.addEventListener("click", () => {
+        if (!userImg) return;
+        const scaleX = canvas.width / userImg.width;
+        const scaleY = canvas.height / userImg.height;
+        scale = Math.max(scaleX, scaleY);
+        zoomSlider.value = Math.round(scale * 100);
+        zoomValue.innerText = `${zoomSlider.value}%`;
+        offsetX = 0;
+        offsetY = 0;
+        rotation = 0;
+        isMirrored = false;
         drawCanvas();
       });
 
@@ -2280,7 +2337,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        // Multiply displacement by scale factor ratio of canvas logical to physical dimension
         const factor = canvas.width / rect.width;
         offsetX += (mouseX - startX) * factor;
         offsetY += (mouseY - startY) * factor;
@@ -2295,51 +2351,171 @@ document.addEventListener("DOMContentLoaded", async () => {
         canvas.style.cursor = "grab";
       });
 
-      // Touch drag handlers (for mobile)
+      // Touch gesture handlers (Single finger drag & 2-finger pinch zoom)
       canvas.addEventListener("touchstart", (e) => {
-        if (!userImg || e.touches.length !== 1) return;
-        isDragging = true;
+        if (!userImg) return;
         const rect = canvas.getBoundingClientRect();
-        startX = e.touches[0].clientX - rect.left;
-        startY = e.touches[0].clientY - rect.top;
-      });
+
+        if (e.touches.length === 1) {
+          isDragging = true;
+          isPinching = false;
+          startX = e.touches[0].clientX - rect.left;
+          startY = e.touches[0].clientY - rect.top;
+        } else if (e.touches.length === 2) {
+          isDragging = false;
+          isPinching = true;
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          initialPinchDist = Math.sqrt(dx * dx + dy * dy);
+          initialPinchScale = scale;
+        }
+      }, { passive: false });
 
       canvas.addEventListener("touchmove", (e) => {
-        if (!isDragging || e.touches.length !== 1) return;
-        e.preventDefault(); // Stop mobile scroll pull-to-refresh
+        if (!userImg) return;
+        e.preventDefault(); // Prevent scroll while editing
         const rect = canvas.getBoundingClientRect();
-        const touchX = e.touches[0].clientX - rect.left;
-        const touchY = e.touches[0].clientY - rect.top;
 
-        const factor = canvas.width / rect.width;
-        offsetX += (touchX - startX) * factor;
-        offsetY += (touchY - startY) * factor;
+        if (isDragging && e.touches.length === 1) {
+          const touchX = e.touches[0].clientX - rect.left;
+          const touchY = e.touches[0].clientY - rect.top;
 
-        startX = touchX;
-        startY = touchY;
-        drawCanvas();
-      });
+          const factor = canvas.width / rect.width;
+          offsetX += (touchX - startX) * factor;
+          offsetY += (touchY - startY) * factor;
+
+          startX = touchX;
+          startY = touchY;
+          drawCanvas();
+        } else if (isPinching && e.touches.length === 2) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (initialPinchDist > 0) {
+            const factor = dist / initialPinchDist;
+            let newScale = initialPinchScale * factor;
+            newScale = Math.max(0.1, Math.min(3.0, newScale));
+            scale = newScale;
+            zoomSlider.value = Math.round(scale * 100);
+            zoomValue.innerText = `${zoomSlider.value}%`;
+            drawCanvas();
+          }
+        }
+      }, { passive: false });
 
       canvas.addEventListener("touchend", () => {
         isDragging = false;
+        isPinching = false;
       });
 
-      // Download trigger
+      // Share campaign
+      shareCampaignBtn.addEventListener("click", async () => {
+        const shareUrl = `${window.location.origin}/twibbon/${campaign.slug}`;
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: campaign.title,
+              text: campaign.description || 'Yuk pasang bingkai foto twibbon resmi FSH!',
+              url: shareUrl
+            });
+          } catch (err) {
+            console.log('Share aborted', err);
+          }
+        } else {
+          // Copy to clipboard fallback
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            alert("Link kampanye disalin ke clipboard!");
+          } catch (err) {
+            alert("Bagikan link ini: " + shareUrl);
+          }
+        }
+      });
+
+      // High-resolution PNG output & download count increment
       downloadBtn.addEventListener("click", () => {
         if (!userImg) return;
         
-        try {
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
-          const link = document.createElement("a");
-          link.download = `twibbon-${slug}.jpg`;
-          link.href = dataUrl;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+        // Show indicator on downloadBtn
+        const originalText = downloadBtn.innerHTML;
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = "Memproses gambar...";
 
-          alert("Twibbon berhasil diunduh! Foto Anda telah dihapus secara otomatis dari memori browser.");
+        try {
+          // Create high-res offscreen canvas with original frame dimensions
+          const offCanvas = document.createElement("canvas");
+          offCanvas.width = frameWidth;
+          offCanvas.height = frameHeight;
+          const offCtx = offCanvas.getContext("2d");
+
+          // Draw transparent/white background (PNG defaults to transparent, which is perfect)
+          offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
+
+          // Calculate scale factor from preview canvas to native canvas
+          const scaleFactor = offCanvas.width / canvas.width;
+
+          // Draw user image with logical transformations applied at native scale
+          offCtx.save();
+          offCtx.translate(offCanvas.width / 2 + offsetX * scaleFactor, offCanvas.height / 2 + offsetY * scaleFactor);
+          offCtx.rotate((rotation * Math.PI) / 180);
+          if (isMirrored) {
+            offCtx.scale(-1, 1);
+          }
+          const w = userImg.width * scale * scaleFactor;
+          const h = userImg.height * scale * scaleFactor;
+          offCtx.drawImage(userImg, -w / 2, -h / 2, w, h);
+          offCtx.restore();
+
+          // Draw native frame on top
+          if (frameImg.complete) {
+            offCtx.drawImage(frameImg, 0, 0, offCanvas.width, offCanvas.height);
+          }
+
+          // Output PNG Blob
+          offCanvas.toBlob(async (blob) => {
+            if (!blob) {
+              alert("Gagal memproses file PNG.");
+              downloadBtn.disabled = false;
+              downloadBtn.innerHTML = originalText;
+              return;
+            }
+
+            const dataUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.download = `twibbon-${slug}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(dataUrl);
+
+            // Restore button
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = originalText;
+
+            alert("Twibbon resolusi tinggi berhasil diunduh! Foto Anda telah dihapus secara otomatis dari memori browser.");
+
+            // Increment download count in background via Supabase RPC
+            try {
+              await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_twibbon_download`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': SUPABASE_ANON_KEY,
+                  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({ campaign_id: campaign.id })
+              });
+            } catch (rpcErr) {
+              console.warn("Could not increment download count", rpcErr);
+            }
+          }, "image/png");
+
         } catch (err) {
           console.error(err);
+          downloadBtn.disabled = false;
+          downloadBtn.innerHTML = originalText;
           alert("Gagal mengunduh gambar. Jika Anda mengunduh dari browser bawaan medsos (seperti IG/FB/LINE), silakan buka link ini melalui browser utama (Chrome/Safari).");
         }
       });

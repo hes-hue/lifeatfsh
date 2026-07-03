@@ -20,7 +20,8 @@ import {
   Users,
   Layout,
   FileText,
-  Image
+  Image,
+  Copy
 } from 'lucide-react';
 
 export default function App() {
@@ -51,6 +52,9 @@ export default function App() {
   const [campaignDescription, setCampaignDescription] = useState('');
   const [campaignFrameUrl, setCampaignFrameUrl] = useState('');
   const [campaignProfileKey, setCampaignProfileKey] = useState('');
+  const [campaignFrameWidth, setCampaignFrameWidth] = useState(1080);
+  const [campaignFrameHeight, setCampaignFrameHeight] = useState(1080);
+  const [campaignStatus, setCampaignStatus] = useState('draft');
 
   // Profiles Form
   const [profileKey, setProfileKey] = useState('');
@@ -373,6 +377,9 @@ export default function App() {
     setCampaignDescription('');
     setCampaignFrameUrl('');
     setCampaignProfileKey(operator?.role === 'prodi' ? operator?.profile_key : (selectedProfile || 'fsh'));
+    setCampaignFrameWidth(1080);
+    setCampaignFrameHeight(1080);
+    setCampaignStatus('draft');
 
     setIsDialogOpen(true);
   };
@@ -429,9 +436,93 @@ export default function App() {
       setCampaignDescription(item.description || '');
       setCampaignFrameUrl(item.frame_url);
       setCampaignProfileKey(item.profile_key);
+      setCampaignFrameWidth(item.frame_width || 1080);
+      setCampaignFrameHeight(item.frame_height || 1080);
+      setCampaignStatus(item.status || 'draft');
     }
 
     setIsDialogOpen(true);
+  };
+
+  const handleFrameUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('error', 'Ukuran file frame tidak boleh melebihi 5MB!');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.type !== 'image/png' && file.type !== 'image/webp') {
+      showToast('error', 'Hanya diizinkan mengunggah file PNG atau WebP!');
+      e.target.value = '';
+      return;
+    }
+
+    // Set loading state
+    setDataLoading(true);
+
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      img.onload = async () => {
+        // Save dimension automatically
+        setCampaignFrameWidth(img.width);
+        setCampaignFrameHeight(img.height);
+
+        // Validate alpha channel (transparency)
+        const offscreen = document.createElement('canvas');
+        offscreen.width = Math.min(img.width, 200);
+        offscreen.height = Math.min(img.height, 200);
+        const octx = offscreen.getContext('2d');
+        octx.drawImage(img, 0, 0, offscreen.width, offscreen.height);
+        const imgData = octx.getImageData(0, 0, offscreen.width, offscreen.height).data;
+        
+        let hasAlpha = false;
+        for (let i = 3; i < imgData.length; i += 4) {
+          if (imgData[i] < 255) {
+            hasAlpha = true;
+            break;
+          }
+        }
+
+        if (!hasAlpha) {
+          showToast('error', 'Gambar tidak transparan! Gunakan file PNG dengan latar belakang transparan.');
+          setDataLoading(false);
+          e.target.value = '';
+          return;
+        }
+
+        try {
+          const timestamp = Date.now();
+          const fileExt = file.name.split('.').pop();
+          const filePath = `${campaignSlug || 'campaign'}/${timestamp}.${fileExt}`;
+
+          const { data, error } = await supabase.storage
+            .from('twibbon-frames')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: true
+            });
+
+          if (error) throw error;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('twibbon-frames')
+            .getPublicUrl(filePath);
+
+          setCampaignFrameUrl(publicUrl);
+          showToast('success', 'File frame berhasil diunggah!');
+        } catch (err) {
+          showToast('error', 'Gagal mengunggah file ke storage: ' + err.message);
+        } finally {
+          setDataLoading(false);
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   const executeSecureWrite = async (tableName, actionType, payload, id = null) => {
@@ -575,7 +666,10 @@ export default function App() {
           title: campaignTitle,
           description: campaignDescription,
           frame_url: campaignFrameUrl,
-          profile_key: campaignProfileKey
+          profile_key: campaignProfileKey,
+          frame_width: parseInt(campaignFrameWidth, 10) || 1080,
+          frame_height: parseInt(campaignFrameHeight, 10) || 1080,
+          status: campaignStatus || 'draft'
         };
 
         if (dialogMode === 'add') {
@@ -1299,7 +1393,9 @@ export default function App() {
                       <>
                         <th className="px-4 py-2.5">Judul Kampanye</th>
                         <th className="px-4 py-2.5">Slug</th>
-                        <th className="px-4 py-2.5">Frame URL</th>
+                        <th className="px-4 py-2.5 w-24">Dimensi</th>
+                        <th className="px-4 py-2.5 w-20">Status</th>
+                        <th className="px-4 py-2.5 w-20">Unduhan</th>
                         <th className="px-4 py-2.5">Link</th>
                         <th className="px-4 py-2.5 text-right">Aksi</th>
                       </>
@@ -1526,13 +1622,50 @@ export default function App() {
                   {/* Twibbon campaigns rows */}
                   {activeTab === 'twibbon' && paginatedItems.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-4 py-2 font-semibold text-slate-800 text-xs">{item.title}</td>
+                      <td className="px-4 py-2 font-semibold text-slate-800 text-xs">
+                        <div className="flex items-center gap-2">
+                          {item.frame_url ? (
+                            <img src={item.frame_url} alt={item.title} className="w-8 h-8 rounded object-contain bg-slate-100 border border-slate-200 shrink-0" />
+                          ) : (
+                            <div className="w-8 h-8 rounded bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
+                              <Image className="h-4 w-4 text-slate-400" />
+                            </div>
+                          )}
+                          <span className="font-semibold text-slate-800 text-xs truncate max-w-xs">{item.title}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-2 font-mono text-slate-500 text-[11px]">{item.slug}</td>
-                      <td className="px-4 py-2 font-mono text-slate-400 max-w-xs truncate text-[11px]">{item.frame_url}</td>
+                      <td className="px-4 py-2 font-mono text-slate-600 text-[11px]">
+                        {item.frame_width && item.frame_height ? `${item.frame_width}×${item.frame_height}` : '1080×1080'}
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={`px-1.5 py-0.5 rounded font-bold text-[9px] border inline-block ${
+                          item.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                          item.status === 'archived' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                          'bg-amber-50 text-amber-700 border-amber-100'
+                        }`}>
+                          {item.status || 'draft'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 font-mono font-bold text-slate-700 text-xs">
+                        {item.download_count || 0}×
+                      </td>
                       <td className="px-4 py-2 text-[11px]">
-                        <a href={`/twibbon/${item.slug}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:underline hover:text-slate-900 flex items-center gap-0.5">
-                          Buka <ExternalLink className="h-2.5 w-2.5" />
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <a href={`/twibbon/${item.slug}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:underline hover:text-slate-900 flex items-center gap-0.5">
+                            Buka <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(`${window.location.origin}/twibbon/${item.slug}`);
+                              showToast('success', 'Link kampanye berhasil disalin!');
+                            }}
+                            className="text-slate-400 hover:text-slate-950 transition-colors p-0.5"
+                            title="Salin Link Kampanye"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-4 py-2 text-right space-x-1 whitespace-nowrap">
                         <button onClick={() => openEditDialog(item)} className="p-1 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded cursor-pointer transition-all">
@@ -2215,17 +2348,73 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Frame PNG URL (Harus Transparan)</label>
-                    <input
-                      type="url"
-                      required
-                      placeholder="Contoh: https://imgbb.com/frame.png"
-                      value={campaignFrameUrl}
-                      onChange={(e) => setCampaignFrameUrl(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
-                    />
-                    <p className="text-[9px] text-slate-400 mt-0.5">Upload bingkai PNG transparan Anda ke layanan hosting gambar gratis (seperti ImgBB/ImageKit) lalu tempel link langsungnya di sini.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Unggah File Frame (.png / .webp transparan)</label>
+                      <input
+                        type="file"
+                        accept="image/png, image/webp"
+                        onChange={handleFrameUpload}
+                        disabled={!campaignSlug}
+                        className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                      {!campaignSlug && (
+                        <p className="text-[9px] text-amber-600 font-medium mt-1">Harap isi "Slug URL" terlebih dahulu sebelum mengunggah file frame.</p>
+                      )}
+                      <p className="text-[9px] text-slate-400 mt-1">Maksimal 5MB. Dimensi lebar & tinggi serta transparansi akan divalidasi otomatis.</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Atau Tulis Direct URL Frame</label>
+                      <input
+                        type="url"
+                        placeholder="Contoh: https://imgbb.com/frame.png"
+                        value={campaignFrameUrl}
+                        onChange={(e) => setCampaignFrameUrl(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 focus:bg-white transition-all text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Lebar Frame (px)</label>
+                      <input
+                        type="number"
+                        required
+                        min="500"
+                        max="5000"
+                        value={campaignFrameWidth}
+                        onChange={(e) => setCampaignFrameWidth(parseInt(e.target.value, 10) || 1080)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Tinggi Frame (px)</label>
+                      <input
+                        type="number"
+                        required
+                        min="500"
+                        max="5000"
+                        value={campaignFrameHeight}
+                        onChange={(e) => setCampaignFrameHeight(parseInt(e.target.value, 10) || 1080)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Status Kampanye</label>
+                      <select
+                        value={campaignStatus}
+                        onChange={(e) => setCampaignStatus(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-rose-500 focus:bg-white text-xs"
+                      >
+                        <option value="draft">Draft (Tidak Tampil di Publik)</option>
+                        <option value="active">Active (Tampil di Publik)</option>
+                        <option value="archived">Archived (Diarsipkan)</option>
+                      </select>
+                    </div>
                   </div>
 
                   {operator.role === 'admin' && (
