@@ -2201,12 +2201,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       let userImg = null;
       let frameImg = new Image();
-      frameImg.crossOrigin = "anonymous";
-      frameImg.src = campaign.frame_url;
+      let frameCORSAvailable = false;
 
+      // Try loading frame with CORS first (allows canvas export)
+      // If the server doesn't send Access-Control-Allow-Origin, fall back to display-only
+      frameImg.crossOrigin = "anonymous";
       frameImg.onload = () => {
+        frameCORSAvailable = true;
         drawCanvas();
       };
+      frameImg.onerror = () => {
+        // CORS failed — reload without crossOrigin for display-only
+        console.warn("[Twibbon] Frame CORS failed, reloading for display-only");
+        frameCORSAvailable = false;
+        frameImg = new Image(); // fresh Image without crossOrigin
+        frameImg.onload = () => {
+          drawCanvas();
+        };
+        frameImg.onerror = () => {
+          console.error("[Twibbon] Frame image failed to load entirely");
+        };
+        // Append cache-buster to avoid serving the failed CORS cached response
+        const separator = campaign.frame_url.includes("?") ? "&" : "?";
+        frameImg.src = campaign.frame_url + separator + "_nocors=1";
+      };
+      frameImg.src = campaign.frame_url;
 
       // State variables
       let scale = 1.0;
@@ -2434,7 +2453,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       // High-resolution PNG output & download count increment
-      downloadBtn.addEventListener("click", () => {
+      downloadBtn.addEventListener("click", async () => {
         if (!userImg) return;
         
         // Show indicator on downloadBtn
@@ -2468,8 +2487,41 @@ document.addEventListener("DOMContentLoaded", async () => {
           offCtx.restore();
 
           // Draw native frame on top
-          if (frameImg.complete) {
-            offCtx.drawImage(frameImg, 0, 0, offCanvas.width, offCanvas.height);
+          // If CORS was available, frameImg is safe to draw on the export canvas
+          // If CORS was NOT available, we need to fetch the frame as a blob to create a clean image
+          let exportFrameImg = null;
+
+          if (frameCORSAvailable) {
+            // Frame was loaded with CORS — safe to use directly
+            exportFrameImg = frameImg;
+          } else {
+            // CORS not available — try fetching frame as blob via Supabase proxy or direct fetch
+            try {
+              // Attempt to fetch the frame image through a CORS-enabled path
+              // First try: use the Supabase URL as a proxy if the image is in storage
+              const frameUrl = campaign.frame_url;
+              
+              // Try direct fetch with CORS mode
+              const resp = await fetch(frameUrl, { mode: "cors" });
+              if (resp.ok) {
+                const blob = await resp.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                exportFrameImg = await new Promise((resolve, reject) => {
+                  const img = new Image();
+                  img.onload = () => resolve(img);
+                  img.onerror = () => reject(new Error("Blob image failed to load"));
+                  img.src = blobUrl;
+                });
+                URL.revokeObjectURL(blobUrl);
+              }
+            } catch (fetchErr) {
+              console.warn("[Twibbon] Could not fetch frame for export:", fetchErr.message);
+              // exportFrameImg stays null — we'll export without frame
+            }
+          }
+
+          if (exportFrameImg && exportFrameImg.complete && exportFrameImg.naturalWidth > 0) {
+            offCtx.drawImage(exportFrameImg, 0, 0, offCanvas.width, offCanvas.height);
           }
 
           // Output PNG Blob
@@ -2494,7 +2546,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             downloadBtn.disabled = false;
             downloadBtn.innerHTML = originalText;
 
-            alert("Twibbon resolusi tinggi berhasil diunduh! Foto Anda telah dihapus secara otomatis dari memori browser.");
+            if (!exportFrameImg) {
+              alert("Foto berhasil diunduh tanpa bingkai (frame server tidak mendukung CORS). Silakan minta admin mengunggah frame melalui panel Admin agar unduhan lengkap.");
+            } else {
+              alert("Twibbon resolusi tinggi berhasil diunduh! Foto Anda telah dihapus secara otomatis dari memori browser.");
+            }
 
             // Increment download count in background via Supabase RPC
             try {
@@ -2513,7 +2569,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           }, "image/png");
 
         } catch (err) {
-          console.error(err);
+          console.error("[Twibbon] Download error:", err);
           downloadBtn.disabled = false;
           downloadBtn.innerHTML = originalText;
           alert("Gagal mengunduh gambar. Jika Anda mengunduh dari browser bawaan medsos (seperti IG/FB/LINE), silakan buka link ini melalui browser utama (Chrome/Safari).");
